@@ -1,5 +1,18 @@
 # Root .gitignore for Merkle Task Management Framework
 
+# OS specific
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# IDEs
+.vscode/
+.idea/
+.zed/
+.nova/
+.fleet/
+
 # Dependencies
 node_modules/
 vendor/
@@ -13,26 +26,26 @@ output/code/.env
 output/code/.env.*
 *.key
 
-# OS specific
-.DS_Store
-Thumbs.db
-
-# IDEs
-.vscode/
-.idea/
-.zed/
-.nova/
-
-# Laravel Artifacts
-output/code/public/build/
-output/code/public/hot/
-output/code/public/storage
+# Laravel specific (output/code)
+output/code/storage/*.key
+output/code/storage/app/public/*
 output/code/storage/framework/cache/data/*
 output/code/storage/framework/sessions/*
 output/code/storage/framework/views/*
 output/code/storage/logs/*.log
 output/code/storage/pail/
+output/code/public/build/
+output/code/public/hot/
+output/code/public/storage
 output/code/.phpunit.result.cache
+output/code/.phpunit.cache/
+output/code/database/database.sqlite
+
+# Terraform specific (output/infra)
+output/infra/.terraform/
+output/infra/*.tfstate
+output/infra/*.tfstate.*
+output/infra/.terraform.lock.hcl
 
 # Logs
 *.log
@@ -40,6 +53,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Temporary files
+# Temporary files & Build artifacts
 rewrite_tailwind.js
 refactor_kanban.js
+.phpunit.result.cache
+dist/
+build/

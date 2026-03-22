@@ -1,0 +1,113 @@
+📋 Project: TaskFlow AI (Enterprise Task Management)
+
+Version: 1.1 (Detailed Specification)
+
+Author: Product Owner Agent
+
+Status: Ready for Design & Architecture
+
+Stack: Laravel 13 + React (Inertia/shadcn/ui) + Material Icons + GCP
+
+1. วิสัยทัศน์ของผลิตภัณฑ์ (Product Vision)
+
+สร้างระบบจัดการงานระดับองค์กรที่ "ทรงพลังเหมือน Jira แต่ใช้งานง่ายเหมือน Trello" โดยเน้นการทำงานร่วมกันระหว่าง มนุษย์ (Human) และ AI Agents ผ่านระบบ API และการเชื่อมต่อ Git ที่ชาญฉลาด เพื่อลดภาระงานซ้ำซ้อนและเพิ่มประสิทธิภาพในทีมพัฒนาซอฟต์แวร์
+
+2. กลุ่มเป้าหมายและ User Stories (User Personas)
+
+2.1 Project Manager (PM)
+
+Story: ในฐานะ PM ฉันต้องการเห็น Dashboard ที่สรุปสถานะงานและ Resource Loading เพื่อให้สามารถตัดสินใจปรับแผนงานได้ทันท่วงที
+
+Requirement: หน้าจอ Summary Report ที่ดึงข้อมูลจากทุก Project มาแสดงผลเป็นกราฟ
+
+2.2 Developer
+
+Story: ในฐานะ Developer ฉันต้องการให้ Task อัปเดตสถานะอัตโนมัติเมื่อฉันส่ง Code เพื่อลดเวลาในการเข้ามาจัดการหน้าบอร์ด
+
+Requirement: การเชื่อมต่อ Webhook กับ GitHub/GitLab เพื่อดึงข้อมูล Commit และสถานะ PR
+
+2.3 AI Agent (Digital Worker)
+
+Story: ในฐานะ AI Agent ฉันต้องการช่องทาง API ที่ชัดเจนเพื่อดึงงานที่ได้รับมอบหมายไปทำ และส่งสรุปงานกลับมาให้มนุษย์รีวิว
+
+Requirement: RESTful API สำหรับ CRUD Task และระบบ Notification เมื่อมีการ Assign งานให้ AI
+
+3. รายละเอียดคุณสมบัติ (Detailed Functional Requirements)
+
+3.1 ระบบ Kanban & Workflow (Core)
+
+FR1: รองรับการสร้างหลาย Board ภายในหนึ่ง Workspace
+
+FR2: ระบบ Drag & Drop สำหรับย้าย Task (ใช้ dnd-kit หรือ react-beautiful-dnd)
+
+FR3: ระบบ Custom Fields (เช่น Priority: High/Medium/Low, Estimate Time, Tags)
+
+FR4: ระบบ Search & Filter ขั้นสูง (ค้นหาตามชื่อ, ผู้รับผิดชอบ, วันครบกำหนด)
+
+3.2 การเชื่อมต่อ Git Integration
+
+FR5: การตั้งค่า Webhook Secret สำหรับรับข้อมูลจาก Git Provider
+
+FR6: การ Mapping Git User กับ TaskFlow User ผ่าน Email หรือ Username
+
+FR7: การแสดงผล Diff ของ Code หรือลิงก์ไปยัง PR ภายใน Modal ของ Task นั้นๆ
+
+3.3 ระบบ AI Collaboration API
+
+FR8: Endpoint: GET /api/v1/agent/tasks - ดึงรายการงานที่ Assign ให้ Agent เฉพาะราย
+
+FR9: Endpoint: POST /api/v1/agent/task/{id}/submit - ส่งผลลัพธ์งานและเปลี่ยนสถานะเป็น "Awaiting Review"
+
+FR10: Human-in-the-loop Toggle: ตัวเลือกใน Task ที่กำหนดว่าต้องมีการอนุมัติโดยมนุษย์ก่อนสถานะจะเปลี่ยนเป็น Done
+
+4. ข้อกำหนดทางเทคนิคและคุณภาพ (Non-Functional Requirements)
+
+4.1 UI/UX Architecture
+
+Design System: ใช้โทนสี Slate/Zinc จาก shadcn/ui เพื่อความมืออาชีพ
+
+Accessibility: รองรับการใช้งานผ่าน Keyboard (Shortcuts) และ Screen Readers (WCAG AA)
+
+Responsive: รองรับขนาดหน้าจอตั้งแต่ 1024px ขึ้นไป (Desktop Optimized)
+
+4.2 Security & Performance
+
+RBAC Roles: Admin (จัดการระบบ), Manager (สร้าง Project/Task), Member (รับงาน), Agent (ใช้งานผ่าน API เท่านั้น)
+
+Auth: ใช้ Laravel Sanctum สำหรับ Token-based Auth (AI Agents) และ Session-based (Web User)
+
+Performance: ทุก API Call ต้องตอบสนองภายใน 200ms (P95) และหน้าจอแรกต้อง Render ภายใน 1.5s
+
+4.3 Infrastructure (GCP)
+
+Compute: Google Cloud Run (Autoscaling 0-10 instances)
+
+DB: Cloud SQL for PostgreSQL พร้อมการสำรองข้อมูลรายวัน
+
+Storage: Google Cloud Storage สำหรับเก็บไฟล์แนบใน Task
+
+5. แผนการส่งต่องาน (Handover Checklist)
+
+5.1 สำหรับ Service Designer
+
+[ ] ออกแบบ UI สำหรับ Dashboard, Kanban Board และ Task Detail Modal
+
+[ ] ระบุจุดแสดงผล "AI Generated Content" ให้แตกต่างจากคนเขียนปกติ
+
+[ ] เลือก Material Icons สำหรับ Status ต่างๆ (e.g., git_pull_request, smart_toy, person)
+
+5.2 สำหรับ Solution Architect
+
+[ ] ออกแบบ Database Schema รองรับ Task Dependencies และ Git Webhook Logs
+
+[ ] จัดทำ OpenAPI Specification (Swagger) สำหรับ AI Agent API
+
+[ ] วางแผนระบบ Queue สำหรับการประมวลผล Webhook จาก Git
+
+5.3 สำหรับ Lead Developer
+
+[ ] ติดตั้ง Laravel 13 พร้อม Inertia.js และ React
+
+[ ] Setup shadcn/ui components: Table, Dialog, Command, Toast, Popover
+
+ปรับปรุงล่าสุด: 2024-05-20 11:30:00 (v1.1)
