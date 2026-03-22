@@ -1,0 +1,45 @@
+# Root .gitignore for Merkle Task Management Framework
+
+# Dependencies
+node_modules/
+vendor/
+output/code/node_modules/
+output/code/vendor/
+
+# Environment & Secrets
+.env
+.env.*
+output/code/.env
+output/code/.env.*
+*.key
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+.zed/
+.nova/
+
+# Laravel Artifacts
+output/code/public/build/
+output/code/public/hot/
+output/code/public/storage
+output/code/storage/framework/cache/data/*
+output/code/storage/framework/sessions/*
+output/code/storage/framework/views/*
+output/code/storage/logs/*.log
+output/code/storage/pail/
+output/code/.phpunit.result.cache
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+rewrite_tailwind.js
+refactor_kanban.js
