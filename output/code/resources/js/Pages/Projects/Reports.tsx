@@ -35,73 +35,86 @@ interface PageProps {
 export default function Reports({ project, velocity, burndown, activeBoardName }: PageProps) {
     
     const breadcrumbs = (
-        <>
-          <span className="text-muted-foreground font-mono text-sm mr-2 font-normal">[{project.key}]</span>
-          Reports
-        </>
+        <div className="flex items-center gap-2">
+            <span className="text-muted-foreground font-mono text-sm mr-2 md:mr-3 font-normal">[{project.key}]</span>
+            {project.name}
+        </div>
     );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background flex flex-col gap-8">
+            <div className="flex-1 overflow-y-auto bg-background flex flex-col">
                 
-                <header className="flex justify-between items-end">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-foreground">Agile Insights</h1>
-                        <p className="text-sm text-muted-foreground mt-1">Measure team velocity and sprint health.</p>
-                    </div>
-                    <div className="flex gap-2">
-                        <Link 
-                            href={`/projects/${project.key}/boards`}
-                            className="text-xs px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            Back to Board
-                        </Link>
+                {/* Global Header */}
+                <header className="px-4 md:px-8 pt-4 md:pt-6 pb-4 border-b border-border flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-40">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div>
+                                <h1 className="text-lg font-semibold text-foreground">Agile Insights</h1>
+                                <p className="text-[11px] text-muted-foreground">Measure team velocity and sprint health.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 md:gap-4">
+                            {/* View Toggles (Segmented Control Style) */}
+                            <div className="hidden sm:flex bg-muted rounded-sm p-0.5 border border-border/50">
+                                <Link href={`/projects/${project.key}/boards`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                    Board
+                                </Link>
+                                <Link href={`/projects/${project.key}/roadmap`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                    Roadmap
+                                </Link>
+                                <div className="px-4 py-1.5 text-xs font-medium bg-background text-foreground shadow-sm rounded-sm">
+                                    Reports
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="p-4 md:p-8 flex flex-col gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     
                     {/* Burndown Chart Card */}
-                    <div className="bg-card border border-border rounded-lg p-6 shadow-sm flex flex-col gap-6">
+                    <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-6">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
-                                    <span className="material-icons text-[18px] text-primary">trending_down</span>
+                                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                    <span className="material-icons text-[16px] text-primary">trending_down</span>
                                     Burndown Chart
                                 </h2>
-                                <p className="text-xs text-muted-foreground mt-1">Sprint: <span className="font-semibold text-foreground">{activeBoardName}</span></p>
+                                <p className="text-[10px] text-muted-foreground mt-1">Sprint: <span className="font-semibold text-foreground">{activeBoardName}</span></p>
                             </div>
                         </div>
 
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={burndown.actual}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                                     <XAxis 
                                         dataKey="day" 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: '#71717A'}}
+                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
                                     />
                                     <YAxis 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: '#71717A'}}
+                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
                                     />
                                     <Tooltip 
-                                        contentStyle={{ backgroundColor: '#FFF', border: '1px solid #E4E4E7', borderRadius: '4px', fontSize: '12px' }}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
                                     />
-                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '20px' }} />
+                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '20px', color: 'hsl(var(--muted-foreground))' }} />
                                     <Line 
                                         name="Work Remaining"
                                         type="monotone" 
                                         dataKey="remaining" 
-                                        stroke="#0328D1" 
+                                        stroke="hsl(var(--primary))" 
                                         strokeWidth={3}
-                                        dot={{ r: 4, fill: '#0328D1' }}
+                                        dot={{ r: 4, fill: 'hsl(var(--primary))' }}
                                         activeDot={{ r: 6 }}
                                     />
                                 </LineChart>
@@ -110,41 +123,41 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
                     </div>
 
                     {/* Velocity Chart Card */}
-                    <div className="bg-card border border-border rounded-lg p-6 shadow-sm flex flex-col gap-6">
+                    <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-6">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
-                                    <span className="material-icons text-[18px] text-[#0391F2]">speed</span>
+                                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                    <span className="material-icons text-[16px] text-[#0391F2]">speed</span>
                                     Velocity Chart
                                 </h2>
-                                <p className="text-xs text-muted-foreground mt-1">Performance across historical boards.</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">Performance across historical boards.</p>
                             </div>
                         </div>
 
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={velocity}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                                     <XAxis 
                                         dataKey="name" 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: '#71717A'}}
+                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
                                     />
                                     <YAxis 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: '#71717A'}}
+                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
                                     />
                                     <Tooltip 
-                                        cursor={{fill: '#F4F4F5'}}
-                                        contentStyle={{ backgroundColor: '#FFF', border: '1px solid #E4E4E7', borderRadius: '4px', fontSize: '12px' }}
+                                        cursor={{fill: 'hsl(var(--muted))'}}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
                                     />
-                                    <Legend iconType="rect" wrapperStyle={{ fontSize: '10px', paddingTop: '20px' }} />
-                                    <Bar name="Committed" dataKey="committed" fill="#AEAEBC" radius={[4, 4, 0, 0]} />
-                                    <Bar name="Completed" dataKey="completed" fill="#0391F2" radius={[4, 4, 0, 0]} />
+                                    <Legend iconType="rect" wrapperStyle={{ fontSize: '10px', paddingTop: '20px', color: 'hsl(var(--muted-foreground))' }} />
+                                    <Bar name="Committed" dataKey="committed" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} />
+                                    <Bar name="Completed" dataKey="completed" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -195,7 +208,7 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
                         </tbody>
                     </table>
                 </div>
-
+            </div>
             </div>
         </AppLayout>
     );
