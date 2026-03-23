@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
@@ -33,9 +38,78 @@ interface PageProps {
 }
 
 export default function Reports({ project, velocity, burndown, activeBoardName }: PageProps) {
-    
-    const breadcrumbs = (
-        <div className="flex items-center gap-2">
+    const dashboardRef = useRef<HTMLDivElement>(null);
+
+    const handleExportPDF = async () => {
+        if (!dashboardRef.current) return;
+        const toastId = toast.loading('Generating PDF...');
+        try {
+            const canvas = await html2canvas(dashboardRef.current, {
+                scale: 2,
+                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#ffffff',
+                logging: false,
+                useCORS: true
+            });
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+            // Landscape orientation, A4
+            const pdf = new jsPDF('l', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`${project.key}_Agile_Insights_${new Date().toISOString().split('T')[0]}.pdf`);
+            toast.success('PDF downloaded successfully!', { id: toastId });
+        } catch (error) {
+            toast.error('Failed to generate PDF.', { id: toastId });
+        }
+    };
+
+    const handleExportExcel = (type: 'burndown' | 'velocity') => {
+        const toastId = toast.loading(`Generating ${type} Excel...`);
+        try {
+            let data: any[] = [];
+            let headers: string[] = [];
+            let sheetName = '';
+
+            if (type === 'burndown') {
+                sheetName = 'Burndown Data';
+                headers = ['Day', 'Remaining Work'];
+                data = burndown.actual.map(item => ({
+                    'Day': item.day,
+                    'Remaining Work': item.remaining
+                }));
+            } else if (type === 'velocity') {
+                sheetName = 'Velocity Data';
+                headers = ['Sprint/Board Name', 'Committed Points', 'Completed Points'];
+                data = velocity.map(item => ({
+                    'Sprint/Board Name': item.name,
+                    'Committed Points': item.committed,
+                    'Completed Points': item.completed
+                }));
+            }
+
+            if (data.length === 0) {
+                toast.error('No data available to export.', { id: toastId });
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(data, { header: headers });
+
+            // Basic styling for header row in Excel using xlsx (though limited without Pro, we set bold via properties if possible, but basic xlsx just does data)
+            // For a free version, json_to_sheet is the best we can do client-side easily without a heavy library like exceljs pro.
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+            XLSX.writeFile(wb, `${project.key}_${sheetName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+            toast.success('Excel downloaded successfully!', { id: toastId });
+        } catch (error) {
+            toast.error('Failed to generate Excel.', { id: toastId });
+        }
+    };
+
+    const breadcrumbs = (        <div className="flex items-center gap-2">
             <span className="text-muted-foreground font-mono text-sm mr-2 md:mr-3 font-normal">[{project.key}]</span>
             {project.name}
         </div>
@@ -68,11 +142,39 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
                                     Reports
                                 </div>
                             </div>
+                            {/* Export Menu */}
+                            <div className="flex gap-2">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="bg-transparent border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1.5">
+                                            <span className="material-icons text-[14px]">download</span>
+                                            <span className="hidden sm:inline">Export</span>
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-md">
+                                        <DropdownMenuItem onClick={handleExportPDF} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                                            <span className="material-icons text-[14px] mr-2 text-muted-foreground">picture_as_pdf</span>
+                                            Export Dashboard (PDF)
+                                        </DropdownMenuItem>
+                                        
+                                        <div className="h-[1px] bg-border my-1"></div>
+                                        
+                                        <DropdownMenuItem onClick={() => handleExportExcel('burndown')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                                            <span className="material-icons text-[14px] mr-2 text-muted-foreground">table_view</span>
+                                            Export Burndown (Excel)
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleExportExcel('velocity')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                                            <span className="material-icons text-[14px] mr-2 text-muted-foreground">table_view</span>
+                                            Export Velocity (Excel)
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </div>
                     </div>
                 </header>
 
-                <div className="p-4 md:p-8 flex flex-col gap-8">
+                <div ref={dashboardRef} className="p-4 md:p-8 flex flex-col gap-8 bg-background">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     
                     {/* Burndown Chart Card */}
