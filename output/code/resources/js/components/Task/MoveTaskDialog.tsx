@@ -86,14 +86,17 @@ const MoveTaskDialog = ({ isOpen, onClose, taskId, currentProject, currentBoard,
             if (board) {
                 setDynamicColumns(board.columns);
                 setSelectedColumnId(prevColId => {
-                    if (!board.columns.find((c: any) => c.id == prevColId)) {
-                        return board.columns[0]?.id || '';
+                    if (board.columns.find((c: any) => c.id == prevColId)) {
+                        return prevColId;
                     }
-                    return prevColId;
+                    if (board.columns.find((c: any) => c.id == currentColumnId)) {
+                        return currentColumnId;
+                    }
+                    return board.columns[0]?.id || '';
                 });
             }
         }
-    }, [selectedBoardId, dynamicBoards, isOpen]);
+    }, [selectedBoardId, dynamicBoards, isOpen, currentColumnId]);
 
     const handleConfirm = () => {
         if (!selectedProjectId || !selectedBoardId || !selectedColumnId) {
