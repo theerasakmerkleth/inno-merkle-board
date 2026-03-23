@@ -151,6 +151,10 @@ resource "google_cloud_run_v2_service" "taskflow_app" {
         name  = "APP_KEY"
         value = "base64:v1V/q6w48+0i3FvB+4qYc5KqP0+P+K/xYv9XkE/7c7k="
       }
+      env {
+        name  = "DEPLOYMENT_TRIGGER"
+        value = "force_update_for_nginx_https_fix"
+      }
     }
   }
 }
