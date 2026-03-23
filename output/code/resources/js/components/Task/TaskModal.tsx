@@ -107,7 +107,7 @@ const TaskModal = ({
 
     React.useEffect(() => {
         // Fetch structure when project changes, but not on initial load if it's the current project
-        if (data.project_id && data.project_id !== current_project.id) {
+        if (data.project_id && data.project_id != current_project.id) {
             setIsLoadingStructure(true);
             const projectKey = available_projects.find((p: any) => p.id == data.project_id)?.key;
             if (!projectKey) return;
@@ -130,7 +130,7 @@ const TaskModal = ({
         } else {
             // Reset to current project context
             setDynamicBoards([{ id: active_board.id, name: active_board.name, columns }]);
-            if (data.project_id === current_project.id && data.board_id !== active_board.id) {
+            if (data.project_id == current_project.id && data.board_id != active_board.id) {
                 setData(prev => ({ ...prev, board_id: active_board.id, board_column_id: finalInitialColId }));
             }
             setDynamicColumns(columns);
@@ -139,7 +139,7 @@ const TaskModal = ({
 
     React.useEffect(() => {
         // Update columns when board changes
-        if (data.project_id !== current_project.id && data.board_id) {
+        if (data.project_id != current_project.id && data.board_id) {
             const board = dynamicBoards.find(b => b.id == data.board_id);
             if (board) {
                 setDynamicColumns(board.columns);
