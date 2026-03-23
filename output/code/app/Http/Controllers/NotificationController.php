@@ -9,40 +9,43 @@ class NotificationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $user = $request->user();
+        
+        $notifications = $user->notifications()->take(50)->get()->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'data' => $notification->data,
+                'read_at' => $notification->read_at,
+                'created_at' => $notification->created_at,
+            ];
+        });
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread_count' => $user->unreadNotifications()->count()
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Mark a specific notification as read.
      */
-    public function store(Request $request)
+    public function markAsRead(Request $request, string $id)
     {
-        //
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        return response()->json(['success' => true]);
     }
 
     /**
-     * Display the specified resource.
+     * Mark all notifications as read.
      */
-    public function show(string $id)
+    public function markAllAsRead(Request $request)
     {
-        //
-    }
+        $request->user()->unreadNotifications->markAsRead();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json(['success' => true]);
     }
 }

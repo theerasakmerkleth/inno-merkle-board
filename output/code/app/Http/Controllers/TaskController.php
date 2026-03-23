@@ -191,4 +191,16 @@ class TaskController extends Controller
 
         return redirect()->back()->with('success', 'Task deleted successfully.');
     }
+
+    public function activityLogs(Task $task)
+    {
+        // Must have access to view the project to view task logs
+        if (! $task->project->users->contains(auth()->id()) && ! auth()->user()->hasRole('Admin')) {
+            abort(403);
+        }
+
+        $logs = $task->activityLogs()->with('user')->paginate(15);
+        
+        return response()->json($logs);
+    }
 }

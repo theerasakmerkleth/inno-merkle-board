@@ -59,6 +59,11 @@ class Task extends Model
         return $this->hasMany(Checklist::class);
     }
 
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class)->orderBy('created_at', 'desc');
+    }
+
     public function comments()
     {
         return $this->hasMany(Comment::class);

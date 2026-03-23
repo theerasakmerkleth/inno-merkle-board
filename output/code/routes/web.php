@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/boards/{board}/tasks', [TaskController::class, 'store']);
     Route::patch('/tasks/{task}', [TaskController::class, 'update']);
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
+    Route::get('/tasks/{task}/activity-logs', [TaskController::class, 'activityLogs']);
     Route::patch('/boards/{board}/tasks/reorder', [\App\Http\Controllers\TaskController::class, 'reorder']);
     Route::patch('/tasks/{id}/status', [\App\Http\Controllers\TaskController::class, 'updateStatus']);
 
@@ -90,5 +91,6 @@ Route::middleware('auth')->group(function () {
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
 
 });
