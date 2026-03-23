@@ -17,9 +17,14 @@ interface Props {
     data: any;
     setData: (key: string, value: any) => void;
     columns: ColumnProps[];
+    boards?: any[];
+    projects?: any[];
+    current_project?: any;
     project_members: User[];
     canEdit: boolean;
     errors: any;
+    isLoadingStructure?: boolean;
+    isEditMode?: boolean;
 }
 
 const labelOptions = [
@@ -32,7 +37,7 @@ const labelOptions = [
     { value: 'urgent', label: 'Urgent' },
 ];
 
-const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit, errors }: Props) => {
+const TaskMetadataSidebar = ({ data, setData, columns, boards = [], projects = [], current_project, project_members, canEdit, errors, isLoadingStructure = false, isEditMode = false }: Props) => {
     
     const customStyles = {
         control: (base: any, state: any) => ({
@@ -117,8 +122,53 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
     };
 
     return (
-        <div className="md:col-span-4 bg-muted/30 border-l border-border p-6 space-y-6 h-full overflow-y-auto">
+        <div className="md:col-span-4 bg-muted/30 border-l border-border p-6 space-y-6 h-full overflow-y-auto relative">
             
+            {/* Loading Overlay for Dynamic Structure Fetching */}
+            {isLoadingStructure && (
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <span className="material-icons animate-spin text-primary">autorenew</span>
+                </div>
+            )}
+
+            {isEditMode && projects && projects.length > 0 && (
+                <div className="space-y-4">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location</h4>
+                    
+                    <div className="grid grid-cols-3 items-center gap-4">
+                        <label htmlFor="task-project" className="text-xs text-muted-foreground col-span-1">Project</label>
+                        <select 
+                            id="task-project"
+                            name="project_id"
+                            value={data.project_id}
+                            onChange={e => setData('project_id', e.target.value)}
+                            disabled={!canEdit}
+                            className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        >
+                            {projects.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-4">
+                        <label htmlFor="task-board" className="text-xs text-muted-foreground col-span-1">Board</label>
+                        <select 
+                            id="task-board"
+                            name="board_id"
+                            value={data.board_id}
+                            onChange={e => setData('board_id', e.target.value)}
+                            disabled={!canEdit || boards.length === 0}
+                            className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        >
+                            {boards.map(b => (
+                                <option key={b.id} value={b.id}>{b.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            )}
+
             <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Details</h4>
                 

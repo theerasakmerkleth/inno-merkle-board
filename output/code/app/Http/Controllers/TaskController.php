@@ -74,6 +74,8 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'priority' => 'sometimes|required|in:low,medium,high',
             'assignee_id' => 'nullable|exists:users,id',
+            'project_id' => 'nullable|exists:projects,id',
+            'board_id' => 'nullable|exists:boards,id',
             'board_column_id' => 'sometimes|required|exists:board_columns,id',
             'start_date' => 'nullable|date',
             'due_date' => 'nullable|date|after_or_equal:start_date',
@@ -81,6 +83,13 @@ class TaskController extends Controller
             'labels' => 'nullable|array',
             'labels.*' => 'string|max:50',
         ]);
+
+        if (isset($validated['project_id']) && $validated['project_id'] != $task->project_id) {
+            $newProject = \App\Models\Project::findOrFail($validated['project_id']);
+            if (! $newProject->users->contains(auth()->id()) && ! auth()->user()->hasRole('Admin')) {
+                abort(403, 'Unauthorized to move tasks to this project.');
+            }
+        }
 
         if (isset($validated['description'])) {
             $validated['description'] = Sanitizer::clean($validated['description']);

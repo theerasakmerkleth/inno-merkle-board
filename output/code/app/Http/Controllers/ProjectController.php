@@ -117,4 +117,31 @@ class ProjectController extends Controller
 
         return redirect('/')->with('success', 'Project deleted successfully.');
     }
+
+    public function structure(Project $project)
+    {
+        // Allow if user is part of the project or admin
+        if (! $project->users->contains(auth()->id()) && ! auth()->user()->hasRole('Admin')) {
+            abort(403);
+        }
+
+        $project->load(['boards.columns' => function ($query) {
+            $query->orderBy('order');
+        }]);
+
+        return response()->json([
+            'boards' => $project->boards->map(function ($board) {
+                return [
+                    'id' => $board->id,
+                    'name' => $board->name,
+                    'columns' => $board->columns->map(function ($col) {
+                        return [
+                            'id' => $col->id,
+                            'title' => $col->title
+                        ];
+                    })
+                ];
+            })
+        ]);
+    }
 }

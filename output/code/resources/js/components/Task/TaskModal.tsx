@@ -69,7 +69,7 @@ const TaskModal = ({
     canEdit, 
     canDelete 
 }: Props) => {
-    const { auth } = usePage<any>().props;
+    const { auth, available_projects = [] } = usePage<any>().props;
     const isEditMode = !!task;
     
     const formatDate = (dateStr: any) => {
@@ -84,8 +84,6 @@ const TaskModal = ({
         }
     };
 
-    const initialColumnId = task ? columns.find(c => c.db_id === task.id)/* This was wrong in original, should find by task relation but original code used tasks.some */ ? '' : '' : '';
-    // Actually, let's stick to a safer way to find initial column
     const taskColId = task ? columns.find(c => (c as any).tasks?.some((t: any) => t.id === task.id))?.db_id : null;
     const finalInitialColId = taskColId || initialColumnIdForCreate || columns[0]?.db_id || '';
 
@@ -94,12 +92,63 @@ const TaskModal = ({
         description: task?.description || '',
         priority: task?.priority || 'medium',
         assignee_id: task?.assignee_id || '',
+        project_id: task?.project_id || current_project.id,
+        board_id: task?.board_id || active_board.id,
         board_column_id: finalInitialColId,
         start_date: formatDate(task?.start_date),
         due_date: formatDate(task?.due_date),
         story_points: task?.story_points || 0,
         labels: task?.labels || [],
     });
+
+    const [dynamicBoards, setDynamicBoards] = React.useState<any[]>([]);
+    const [dynamicColumns, setDynamicColumns] = React.useState<ColumnProps[]>(columns);
+    const [isLoadingStructure, setIsLoadingStructure] = React.useState(false);
+
+    React.useEffect(() => {
+        // Fetch structure when project changes, but not on initial load if it's the current project
+        if (data.project_id && data.project_id !== current_project.id) {
+            setIsLoadingStructure(true);
+            const projectKey = available_projects.find((p: any) => p.id == data.project_id)?.key;
+            if (!projectKey) return;
+
+            fetch(`/api/projects/${projectKey}/structure`)
+                .then(res => res.json())
+                .then(result => {
+                    setDynamicBoards(result.boards);
+                    if (result.boards.length > 0) {
+                        const firstBoard = result.boards[0];
+                        setData(prev => ({ ...prev, board_id: firstBoard.id, board_column_id: firstBoard.columns[0]?.id || '' }));
+                        setDynamicColumns(firstBoard.columns);
+                    } else {
+                        setData(prev => ({ ...prev, board_id: '', board_column_id: '' }));
+                        setDynamicColumns([]);
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => setIsLoadingStructure(false));
+        } else {
+            // Reset to current project context
+            setDynamicBoards([{ id: active_board.id, name: active_board.name, columns }]);
+            if (data.project_id === current_project.id && data.board_id !== active_board.id) {
+                setData(prev => ({ ...prev, board_id: active_board.id, board_column_id: finalInitialColId }));
+            }
+            setDynamicColumns(columns);
+        }
+    }, [data.project_id]);
+
+    React.useEffect(() => {
+        // Update columns when board changes
+        if (data.project_id !== current_project.id && data.board_id) {
+            const board = dynamicBoards.find(b => b.id == data.board_id);
+            if (board) {
+                setDynamicColumns(board.columns);
+                if (!board.columns.find((c: any) => c.id == data.board_column_id)) {
+                    setData('board_column_id', board.columns[0]?.id || '');
+                }
+            }
+        }
+    }, [data.board_id, dynamicBoards]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         alert(`File upload simulation: ${acceptedFiles[0].name}. (Backend endpoint ready in AttachmentController)`);
@@ -229,10 +278,15 @@ const TaskModal = ({
                         <TaskMetadataSidebar 
                             data={data}
                             setData={setData}
-                            columns={columns}
+                            columns={dynamicColumns}
+                            boards={dynamicBoards}
+                            projects={available_projects}
+                            current_project={current_project}
                             project_members={project_members}
                             canEdit={canEdit}
                             errors={errors}
+                            isLoadingStructure={isLoadingStructure}
+                            isEditMode={isEditMode}
                         />
                     </form>
                 </div>
