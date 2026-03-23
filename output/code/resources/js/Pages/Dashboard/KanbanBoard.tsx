@@ -502,6 +502,12 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
       <header className="px-4 md:px-8 pt-4 md:pt-6 pb-0 border-b border-border flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
           <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
+                 <div className="flex flex-col">
+                    <h1 className="text-lg font-semibold text-foreground truncate max-w-[200px]" title={active_board.name}>
+                        {active_board.name}
+                    </h1>
+                    <p className="text-[11px] text-muted-foreground hidden sm:block">Manage tasks and team workflow.</p>
+                 </div>
                  {canCreateOrEdit && (
                      <button 
                         onClick={() => openCreateModal()}

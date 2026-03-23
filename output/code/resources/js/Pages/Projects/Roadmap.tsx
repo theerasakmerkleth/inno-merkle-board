@@ -178,9 +178,9 @@ export default function Roadmap({ project, tasks }: PageProps) {
                 <header className="px-4 md:px-8 pt-4 md:pt-6 pb-0 border-b border-border flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-40">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-4">
-                            <div>
+                            <div className="flex flex-col">
                                 <h1 className="text-lg font-semibold text-foreground">Strategic Roadmap</h1>
-                                <p className="text-[11px] text-muted-foreground">Macro-level timeline and blockers.</p>
+                                <p className="text-[11px] text-muted-foreground hidden sm:block">Macro-level timeline and blockers.</p>
                             </div>
                         </div>
                         
