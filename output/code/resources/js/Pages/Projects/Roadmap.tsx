@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
@@ -173,6 +173,7 @@ export default function Roadmap({ project, tasks }: PageProps) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={`Roadmap | ${project.key}`} />
             <div className="flex-1 flex flex-col overflow-hidden bg-background">
                 {/* Global Header */}
                 <header className="px-4 md:px-8 pt-4 md:pt-6 pb-0 border-b border-border flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-40">

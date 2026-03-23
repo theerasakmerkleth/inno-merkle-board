@@ -2,7 +2,7 @@ import React, { useState, FormEvent, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, DragEndEvent, useDraggable, useDroppable, PointerSensor, useSensor, useSensors, DragStartEvent, DragOverEvent, pointerWithin, rectIntersection, DragOverlay } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { SortableContext, verticalListSortingStrategy, horizontalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
-import { router, usePage, Link, useForm } from '@inertiajs/react';
+import { router, usePage, Link, useForm, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import TaskModal from '@/components/Task/TaskModal';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -497,6 +497,7 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
 
   return (
     <AppLayout breadcrumbs={breadcrumbs} available_projects={available_projects}>
+      <Head title={`${active_board.name} | ${current_project.key}`} />
       
       {/* Top Header: Board Context & Tabs */}
       <header className="px-4 md:px-8 pt-4 md:pt-6 pb-0 border-b border-border flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">

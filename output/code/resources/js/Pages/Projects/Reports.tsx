@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
@@ -129,6 +129,7 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={`Agile Insights | ${project.key}`} />
             <div className="flex-1 overflow-y-auto bg-background flex flex-col">
                 
                 {/* Global Header */}
