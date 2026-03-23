@@ -499,84 +499,78 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
     <AppLayout breadcrumbs={breadcrumbs} available_projects={available_projects}>
       
       {/* Top Header: Board Context & Tabs */}
-      <header className="px-4 md:px-8 pt-4 md:pt-6 pb-0 border-b border-border flex-shrink-0 bg-card/80 backdrop-blur-sm z-10">
+      <header className="px-4 md:px-8 pt-4 md:pt-6 pb-0 border-b border-border flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
           <div className="flex items-center justify-between mb-4">
-              <div className="flex gap-2">
+              <div className="flex items-center gap-4">
                  {canCreateOrEdit && (
                      <button 
-                        onClick={openCreateModal}
-                        className="bg-primary hover:bg-primary/90 text-white text-xs px-3 py-1.5 rounded-sm transition-colors shadow-sm flex items-center gap-1">
-                        <span className="material-icons text-[14px]">add</span>
+                        onClick={() => openCreateModal()}
+                        className="bg-primary hover:bg-primary/90 text-white text-xs px-4 py-2 rounded-sm transition-colors shadow-sm flex items-center gap-1.5 font-semibold">
+                        <span className="material-icons text-[16px]">add</span>
                         Create Task
                      </button>
                  )}
               </div>
               
-              <div className="flex items-center gap-3">
-                  {canCreateOrEdit && (
-                      <button 
-                        onClick={() => setIsConfigMode(!isConfigMode)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${isConfigMode ? 'bg-primary text-primary-foreground shadow-inner' : 'bg-transparent border border-border text-muted-foreground hover:text-foreground'}`}
-                      >
-                        <span className="material-icons text-[14px]">{isConfigMode ? 'settings_suggest' : 'settings_overscan'}</span>
-                        {isConfigMode ? 'Configuration: ON' : 'Configure Board'}
-                      </button>
-                  )}
+              <div className="flex items-center gap-2 md:gap-4">
+                  {/* View Toggles (Segmented Control Style) */}
+                  <div className="hidden sm:flex bg-muted rounded-sm p-0.5 border border-border/50">
+                      <div className="px-4 py-1.5 text-xs font-medium bg-background text-foreground shadow-sm rounded-sm">
+                          Board
+                      </div>
+                      <Link href={`/projects/${current_project.key}/roadmap`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                          Roadmap
+                      </Link>
+                      <Link href={`/projects/${current_project.key}/reports`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                          Reports
+                      </Link>
+                  </div>
 
-                  <Link 
-                      href={`/projects/${current_project.key}/roadmap`}
-                      className="bg-transparent border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1.5"
-                  >
-                      <span className="material-icons text-[14px]">map</span>
-                      <span className="hidden sm:inline">Roadmap</span>
-                  </Link>
-                  <Link 
-                      href={`/projects/${current_project.key}/reports`}
-                      className="bg-transparent border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1.5"
-                  >
-                      <span className="material-icons text-[14px]">assessment</span>
-                      <span className="hidden sm:inline">Reports</span>
-                  </Link>
-
-                  {/* Export Menu */}
+                  {/* Unified Actions Menu */}
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                          <button className="bg-transparent border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1.5">
-                              <span className="material-icons text-[14px]">download</span>
-                              <span className="hidden sm:inline">Export</span>
+                          <button className="bg-transparent border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs px-2 py-1.5 rounded-sm transition-colors flex items-center">
+                              <span className="material-icons text-[18px]">more_horiz</span>
                           </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 bg-background border border-border">
+                      <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-md">
+                          <DropdownMenuItem onClick={() => setIsConfigMode(!isConfigMode)} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">{isConfigMode ? 'settings_suggest' : 'settings_overscan'}</span>
+                              {isConfigMode ? 'Disable Configuration' : 'Configure Board'}
+                          </DropdownMenuItem>
+                          
+                          <div className="h-[1px] bg-border my-1"></div>
+                          
                           <DropdownMenuItem onClick={() => handleExport('board')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
-                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">view_kanban</span>
+                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">download</span>
                               Export to Excel (Current Board)
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleExport('project')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
-                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">folder</span>
+                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">folder_open</span>
                               Export All Tasks (Project)
                           </DropdownMenuItem>
+
+                          {((canDelete && isConfigMode && active_board.name !== 'Backlog') || (project_role === 'Manager' || (auth?.user as any)?.role === 'Admin')) && (
+                              <>
+                                  <div className="h-[1px] bg-border my-1"></div>
+                                  {(project_role === 'Manager' || (auth?.user as any)?.role === 'Admin') && (
+                                      <DropdownMenuItem asChild className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                                          <Link href={`/projects/${current_project.key}/settings`} className="flex items-center w-full">
+                                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">settings</span>
+                                              Project Settings
+                                          </Link>
+                                      </DropdownMenuItem>
+                                  )}
+                                  {canDelete && isConfigMode && active_board.name !== 'Backlog' && (
+                                      <DropdownMenuItem onClick={handleDeleteBoard} className="text-xs cursor-pointer hover:bg-destructive hover:text-destructive-foreground focus:text-destructive-foreground focus:bg-destructive text-destructive">
+                                          <span className="material-icons text-[14px] mr-2">delete</span>
+                                          Delete Board
+                                      </DropdownMenuItem>
+                                  )}
+                              </>
+                          )}
                       </DropdownMenuContent>
                   </DropdownMenu>
-
-                  {canDelete && isConfigMode && active_board.name !== 'Backlog' && (
-                      <button 
-                          onClick={handleDeleteBoard}
-                          className="bg-transparent border border-border text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1.5"
-                          title="Delete this board"
-                      >
-                          <span className="material-icons text-[14px]">delete</span>
-                          <span className="hidden sm:inline">Delete Board</span>
-                      </button>
-                  )}
-                  {(project_role === 'Manager' || (auth?.user as any)?.role === 'Admin') && (
-                      <Link 
-                          href={`/projects/${current_project.key}/settings`}
-                          className="bg-transparent border border-border text-foreground hover:bg-accent text-xs px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1.5"
-                      >
-                          <span className="material-icons text-[14px]">settings</span>
-                          <span className="hidden sm:inline">Project Settings</span>
-                      </Link>
-                  )}
               </div>
           </div>
 
@@ -656,12 +650,12 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
           </SortableContext>
           <DragOverlay>
             {activeTask ? (
-                <div className="opacity-80 rotate-2 scale-105 transition-transform shadow-2xl cursor-grabbing">
+                <div className="opacity-80 rotate-3 scale-105 transition-transform shadow-xl cursor-grabbing">
                     <TaskCard task={activeTask} />
                 </div>
             ) : null}
             {activeColumn ? (
-                <div className="opacity-80 rotate-2 scale-105 transition-transform shadow-2xl cursor-grabbing bg-background rounded-lg p-2 min-w-[280px]">
+                <div className="opacity-80 rotate-3 scale-105 transition-transform shadow-xl cursor-grabbing bg-background rounded-xl p-2 min-w-[280px]">
                     <div className="flex items-center justify-between px-1 group/header">
                         <div className="flex items-center gap-2 flex-1">
                             <span className="material-icons text-[16px] text-primary">drag_indicator</span>
@@ -724,36 +718,77 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
 
 
 const TaskCard = React.memo(({ task }: { task: Task }) => {
-  // Minimalist priority indicator
-  const priorityBorder = task.priority === 'high' ? 'border-l-[#DD3039]' : task.priority === 'medium' ? 'border-l-[#0391F2]' : 'border-l-[#60607D]';
+  // Minimalist priority indicator mapping
+  const priorityIcon = task.priority === 'highest' ? { icon: 'keyboard_double_arrow_up', color: 'text-[#DD3039]' } :
+                       task.priority === 'high' ? { icon: 'keyboard_arrow_up', color: 'text-[#DD3039]' } : 
+                       task.priority === 'low' ? { icon: 'keyboard_arrow_down', color: 'text-[#0391F2]' } : 
+                       task.priority === 'lowest' ? { icon: 'keyboard_double_arrow_down', color: 'text-[#0391F2]' } : 
+                       { icon: 'drag_handle', color: 'text-[#60607D]' }; // Medium
 
   return (
-    <div className={`bg-card text-card-foreground hover:bg-card/80 transition-colors cursor-grab active:cursor-grabbing rounded-sm p-4 border-l-2 ${priorityBorder} border-t border-r border-b border-border relative group flex flex-col gap-3 shadow-sm`}>
+    <div className={`bg-card border border-border/60 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing rounded-lg p-3 relative group flex flex-col gap-2.5`}>
 
-      <div className="flex justify-between items-center">
-        {/* Changed from just #ID to formatted Project Key ID */}
-        <span className="text-xs text-muted-foreground font-mono tracking-tight">{task.formatted_id}</span>
-
-        {task.is_ai_assigned && (
-           <span className="material-icons text-muted-foreground text-[14px]" title="Assigned to AI Agent">
-             smart_toy
-           </span>
-        )}
+      {/* Top Row: Task Key & Assignee */}
+      <div className="flex justify-between items-start">
+        <span className="font-mono text-[10px] text-muted-foreground tracking-tight px-1.5 py-0.5 bg-muted/50 rounded-sm">{task.formatted_id}</span>
+        
+        <div className="flex items-center gap-1">
+            {task.is_ai_assigned && (
+               <span className="material-icons text-muted-foreground text-[12px]" title="Assigned to AI Agent">
+                 smart_toy
+               </span>
+            )}
+            {task.assignee ? (
+                <div className="h-5 w-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[9px] font-medium flex-shrink-0 ring-1 ring-background" title={task.assignee.name}>
+                  {task.assignee.name.substring(0, 2).toUpperCase()}
+                </div>
+            ) : (
+                <div className="h-5 w-5 rounded-full bg-muted/50 flex items-center justify-center text-[10px] text-muted-foreground/50 ring-1 ring-background border border-dashed border-border" title="Unassigned">
+                    <span className="material-icons text-[10px]">person_outline</span>
+                </div>
+            )}
+        </div>
       </div>
 
-      <h4 className="text-sm text-foreground leading-snug">
+      {/* Middle Row: Title */}
+      <h4 className="text-sm font-medium text-foreground leading-snug line-clamp-2">
         {task.title}
       </h4>
 
-      <div className="flex justify-between items-center mt-1">
-         <div className="flex items-center gap-1.5">
-             <span className={`h-1.5 w-1.5 rounded-full ${task.priority === 'high' ? 'bg-[#DD3039]' : task.priority === 'medium' ? 'bg-[#0391F2]' : 'bg-[#60607D]'}`}></span>             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{task.priority}</span>
+      {/* Bottom Row: Metadata (Priority, Points, Checklist, Labels) */}
+      <div className="flex items-center justify-between mt-1 pt-2 border-t border-border/40">
+         <div className="flex items-center gap-2">
+             <span className={`material-icons text-[14px] ${priorityIcon.color}`} title={`Priority: ${task.priority}`}>
+                 {priorityIcon.icon}
+             </span>
+             
+             {task.story_points > 0 && (
+                 <span className="bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded-sm text-[10px] font-mono font-medium" title="Story Points">
+                     {task.story_points}
+                 </span>
+             )}
+
+             {task.checklists && task.checklists.length > 0 && (
+                 <div className="flex items-center gap-0.5 text-muted-foreground" title="Sub-tasks progress">
+                     <span className="material-icons text-[11px]">check_box</span>
+                     <span className="text-[10px] font-mono">{task.checklists[0].items.filter((i:any) => i.is_completed).length}/{task.checklists[0].items.length}</span>
+                 </div>
+             )}
          </div>
-         {task.assignee && (
-             <div className="flex items-center gap-1.5">
-                <div className="h-4 w-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-medium flex-shrink-0" title={task.assignee.name}>
-                  {task.assignee.name.substring(0, 2).toUpperCase()}
-                </div>
+
+         {/* Labels */}
+         {task.labels && task.labels.length > 0 && (
+             <div className="flex gap-1">
+                 {task.labels.slice(0, 2).map((label: string, idx: number) => (
+                     <span key={idx} className="bg-accent/80 text-accent-foreground text-[8px] px-1.5 py-0.5 rounded-full uppercase font-semibold tracking-wider max-w-[60px] truncate" title={label}>
+                         {label}
+                     </span>
+                 ))}
+                 {task.labels.length > 2 && (
+                     <span className="bg-muted text-muted-foreground text-[8px] px-1.5 py-0.5 rounded-full font-bold" title={`+${task.labels.length - 2} more`}>
+                         +{task.labels.length - 2}
+                     </span>
+                 )}
              </div>
          )}
       </div>
@@ -864,8 +899,9 @@ const DroppableColumn = ({ column, user_permissions, canEdit, isConfigMode, onRe
           ref={(node) => {
               setSortableRef(node);
               setDroppableRef(node);
-          }}          style={style}
-          className={`flex-1 min-w-[280px] max-w-[320px] flex flex-col gap-4 rounded-lg p-2 transition-all duration-200 ${isOver ? 'bg-accent/50' : ''} ${isConfigMode ? 'border border-dashed border-primary/30 bg-primary/[0.02]' : 'border border-transparent'} ${column.id === 'done' && !user_permissions.can_move_to_done ? 'opacity-50' : ''} ${!canEdit && !isConfigMode ? 'cursor-not-allowed' : ''}`}
+          }}
+          style={style}
+          className={`flex-1 min-w-[280px] max-w-[320px] flex flex-col gap-4 rounded-xl p-2 transition-all duration-200 ${isOver ? 'bg-primary/5 border-primary/20 border' : 'bg-muted/10 border border-border/50'} ${isConfigMode ? 'border-dashed border-primary/30 bg-primary/[0.02]' : ''} ${column.id === 'done' && !user_permissions.can_move_to_done ? 'opacity-50' : ''} ${!canEdit && !isConfigMode ? 'cursor-not-allowed' : ''}`}
       >
         <div className="flex items-center justify-between px-1 group/header">
             <div className="flex items-center gap-2 flex-1">
@@ -919,7 +955,7 @@ const DroppableColumn = ({ column, user_permissions, canEdit, isConfigMode, onRe
           {canEdit && (
               <button 
                   onClick={() => onCreateCard(column.db_id)}
-                  className="mt-2 flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 p-2 rounded-md transition-colors text-sm w-full"
+                  className="mt-1 flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors text-xs font-medium w-full"
               >
                   <span className="material-icons text-[16px]">add</span>
                   Create Card
