@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['project_id', 'board_id', 'board_column_id', 'project_task_number', 'title', 'description', 'start_date', 'due_date', 'status', 'priority', 'assignee_id', 'is_ai_assigned', 'requires_human_review'])]
+#[Fillable(['project_id', 'board_id', 'board_column_id', 'project_task_number', 'title', 'description', 'start_date', 'due_date', 'status', 'priority', 'assignee_id', 'reporter_id', 'story_points', 'labels', 'is_ai_assigned', 'requires_human_review'])]
 class Task extends Model
 {
     use HasFactory;
@@ -16,6 +16,8 @@ class Task extends Model
         'due_date' => 'date',
         'is_ai_assigned' => 'boolean',
         'requires_human_review' => 'boolean',
+        'labels' => 'array',
+        'story_points' => 'float',
     ];
 
     public function project()

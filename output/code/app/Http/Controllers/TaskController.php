@@ -26,10 +26,14 @@ class TaskController extends Controller
             'board_column_id' => 'nullable|exists:board_columns,id',
             'start_date' => 'nullable|date',
             'due_date' => 'nullable|date|after_or_equal:start_date',
+            'story_points' => 'nullable|numeric|min:0',
+            'labels' => 'nullable|array',
+            'labels.*' => 'string|max:50',
         ]);
 
         $validated['project_id'] = $project->id;
         $validated['board_id'] = $board->id;
+        $validated['reporter_id'] = auth()->id();
         
         if (!isset($validated['board_column_id'])) {
             $firstCol = $board->columns()->orderBy('order')->first();
@@ -68,6 +72,9 @@ class TaskController extends Controller
             'board_column_id' => 'sometimes|required|exists:board_columns,id',
             'start_date' => 'nullable|date',
             'due_date' => 'nullable|date|after_or_equal:start_date',
+            'story_points' => 'nullable|numeric|min:0',
+            'labels' => 'nullable|array',
+            'labels.*' => 'string|max:50',
         ]);
 
         if (isset($validated['board_column_id'])) {
@@ -87,6 +94,8 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
+
+        $task->load(['assignee', 'project', 'checklists.items']);
 
         broadcast(new TaskUpdated($task))->toOthers();
 
@@ -141,9 +150,13 @@ class TaskController extends Controller
         $taskIds = $request->task_ids;
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($columnId, $taskIds) {
+            $col = \App\Models\BoardColumn::find($columnId);
+            $statusStr = strtolower($col->title);
+
             foreach ($taskIds as $index => $id) {
                 Task::where('id', $id)->update([
                     'board_column_id' => $columnId,
+                    'status' => $statusStr,
                     'order_in_column' => $index
                 ]);
             }
