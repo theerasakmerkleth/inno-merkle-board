@@ -3,6 +3,7 @@ import { router, usePage, Link } from '@inertiajs/react';
 import { Command } from 'cmdk';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Toaster } from '@/components/ui/sonner';
 
 interface Project {
   id: number;
@@ -244,7 +245,7 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
               </div>
           </div>
       )}
-
+      <Toaster />
     </div>
   );
 }

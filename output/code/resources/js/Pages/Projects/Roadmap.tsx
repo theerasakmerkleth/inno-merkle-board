@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 interface User {
     id: number;
@@ -123,6 +125,43 @@ export default function Roadmap({ project, tasks }: PageProps) {
         setTimeout(scrollToToday, 200);
     }, [viewMode]);
 
+    const handleExport = async () => {
+        const toastId = toast.loading('Generating Excel report...');
+        try {
+            const url = `/projects/${project.id}/export`;
+                
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to generate report');
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `${project.key}_Roadmap.xlsx`;
+            if (contentDisposition && contentDisposition.includes('filename=')) {
+                filename = contentDisposition.split('filename=')[1].replace(/["']/g, '');
+            }
+            
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+
+            toast.success('Report downloaded successfully!', { id: toastId });
+        } catch (error) {
+            toast.error('Failed to generate report. Please try again.', { id: toastId });
+        }
+    };
+
     const tasksWithoutDates = tasks.filter(t => !t.start_date || !t.due_date);
 
     const breadcrumbs = (
@@ -165,10 +204,25 @@ export default function Roadmap({ project, tasks }: PageProps) {
                         </button>
                         <Link 
                             href={`/projects/${project.key}/boards`}
-                            className="text-[10px] px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground transition-colors"
+                            className="text-[10px] px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground transition-colors flex items-center h-full"
                         >
                             Back to Board
                         </Link>
+                        
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="text-[10px] px-3 py-1.5 border border-border rounded-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 h-full">
+                                    <span className="material-icons text-[14px]">download</span>
+                                    Export
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 bg-background border border-border">
+                                <DropdownMenuItem onClick={() => handleExport()} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                                    <span className="material-icons text-[14px] mr-2 text-muted-foreground">map</span>
+                                    Export Roadmap (All Tasks)
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </header>
 

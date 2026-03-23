@@ -5,6 +5,8 @@ import { SortableContext, verticalListSortingStrategy, horizontalListSortingStra
 import { router, usePage, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import TaskModal from '@/components/Task/TaskModal';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 interface User {
   id: number;
@@ -428,6 +430,46 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
       router.get(`/projects/${key}/boards`);
   };
 
+  const handleExport = async (scope: 'board' | 'project') => {
+      const toastId = toast.loading('Generating Excel report...');
+      try {
+          const url = scope === 'board' 
+              ? `/projects/${current_project.id}/export?board_id=${active_board.id}`
+              : `/projects/${current_project.id}/export`;
+              
+          const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                  'X-Requested-With': 'XMLHttpRequest',
+              }
+          });
+
+          if (!response.ok) throw new Error('Failed to generate report');
+
+          const blob = await response.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          
+          // Get filename from Content-Disposition if possible, otherwise generate one
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let filename = `${current_project.key}_Tasks.xlsx`;
+          if (contentDisposition && contentDisposition.includes('filename=')) {
+              filename = contentDisposition.split('filename=')[1].replace(/["']/g, '');
+          }
+          
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(downloadUrl);
+
+          toast.success('Report downloaded successfully!', { id: toastId });
+      } catch (error) {
+          toast.error('Failed to generate report. Please try again.', { id: toastId });
+      }
+  };
+
   const openCreateModal = (columnId?: number) => {
       setEditingTask(null);
       setInitialColIdForCreate(columnId || null);
@@ -495,6 +537,27 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
                       <span className="material-icons text-[14px]">assessment</span>
                       <span className="hidden sm:inline">Reports</span>
                   </Link>
+
+                  {/* Export Menu */}
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <button className="bg-transparent border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs px-3 py-1.5 rounded-sm transition-colors flex items-center gap-1.5">
+                              <span className="material-icons text-[14px]">download</span>
+                              <span className="hidden sm:inline">Export</span>
+                          </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 bg-background border border-border">
+                          <DropdownMenuItem onClick={() => handleExport('board')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">view_kanban</span>
+                              Export to Excel (Current Board)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExport('project')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                              <span className="material-icons text-[14px] mr-2 text-muted-foreground">folder</span>
+                              Export All Tasks (Project)
+                          </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+
                   {canDelete && isConfigMode && active_board.name !== 'Backlog' && (
                       <button 
                           onClick={handleDeleteBoard}
