@@ -205,31 +205,31 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={burndown.actual}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                                     <XAxis 
                                         dataKey="day" 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
+                                        tick={{fill: 'var(--muted-foreground)'}}
                                     />
                                     <YAxis 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
+                                        tick={{fill: 'var(--muted-foreground)'}}
                                     />
                                     <Tooltip 
-                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
+                                        contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', color: 'var(--foreground)' }}
                                     />
-                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '20px', color: 'hsl(var(--muted-foreground))' }} />
+                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '20px', color: 'var(--muted-foreground)' }} />
                                     <Line 
                                         name="Work Remaining"
                                         type="monotone" 
                                         dataKey="remaining" 
-                                        stroke="hsl(var(--primary))" 
+                                        stroke="var(--primary)" 
                                         strokeWidth={3}
-                                        dot={{ r: 4, fill: 'hsl(var(--primary))' }}
+                                        dot={{ r: 4, fill: 'var(--primary)' }}
                                         activeDot={{ r: 6 }}
                                     />
                                 </LineChart>
@@ -252,27 +252,27 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={velocity}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                                     <XAxis 
                                         dataKey="name" 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
+                                        tick={{fill: 'var(--muted-foreground)'}}
                                     />
                                     <YAxis 
                                         fontSize={10} 
                                         tickLine={false} 
                                         axisLine={false} 
-                                        tick={{fill: 'hsl(var(--muted-foreground))'}}
+                                        tick={{fill: 'var(--muted-foreground)'}}
                                     />
                                     <Tooltip 
-                                        cursor={{fill: 'hsl(var(--muted))'}}
-                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
+                                        cursor={{fill: 'var(--muted)'}}
+                                        contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', color: 'var(--foreground)' }}
                                     />
-                                    <Legend iconType="rect" wrapperStyle={{ fontSize: '10px', paddingTop: '20px', color: 'hsl(var(--muted-foreground))' }} />
-                                    <Bar name="Committed" dataKey="committed" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} />
-                                    <Bar name="Completed" dataKey="completed" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                    <Legend iconType="rect" wrapperStyle={{ fontSize: '10px', paddingTop: '20px', color: 'var(--muted-foreground)' }} />
+                                    <Bar name="Committed" dataKey="committed" fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
+                                    <Bar name="Completed" dataKey="completed" fill="var(--primary)" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
