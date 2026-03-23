@@ -174,29 +174,6 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
                   >
                       <span className="material-icons">search</span>
                   </button>
-                  
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                          <button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-3 py-1.5 rounded-sm transition-colors shadow-sm flex items-center gap-1">
-                              <span className="material-icons text-[14px]">add</span>
-                              <span className="hidden sm:inline">Create...</span>
-                              <span className="material-icons text-[14px]">expand_more</span>
-                          </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => alert('New Issue Dialog to be implemented')} className="cursor-pointer gap-2">
-                              <span className="material-icons text-[16px] text-muted-foreground">task_alt</span>
-                              <span>New Task</span>
-                              <kbd className="ml-auto font-sans text-[10px] bg-muted px-1 rounded">C</kbd>
-                          </DropdownMenuItem>
-                          {((auth?.user as any)?.role === 'Admin' || (auth?.user as any)?.role === 'Project Manager') && (
-                              <DropdownMenuItem onClick={() => router.visit('/projects')} className="cursor-pointer gap-2">
-                                  <span className="material-icons text-[16px] text-muted-foreground">folder</span>
-                                  <span>New Project</span>
-                              </DropdownMenuItem>
-                          )}
-                      </DropdownMenuContent>
-                  </DropdownMenu>
               </div>
           </header>
           
