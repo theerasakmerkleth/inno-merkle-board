@@ -42,8 +42,8 @@ resource "google_sql_database_instance" "postgres_primary" {
   region           = var.gcp_region
 
   settings {
-    tier              = "db-custom-2-8192" # 2 vCPU, 8GB RAM for enterprise workloads
-    availability_type = "REGIONAL"         # High Availability across zones
+    tier              = "db-f1-micro"      # Smallest shared-core instance for Dev/Test
+    availability_type = "ZONAL"            # Single zone deployment to reduce costs
     
     backup_configuration {
       enabled    = true
@@ -122,6 +122,10 @@ resource "google_cloud_run_v2_service" "taskflow_app" {
       env {
         name  = "DB_HOST"
         value = "/cloudsql/${google_sql_database_instance.postgres_primary.connection_name}"
+      }
+      env {
+        name  = "DB_PORT"
+        value = "5432"
       }
       env {
         name  = "DB_DATABASE"
