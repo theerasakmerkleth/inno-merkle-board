@@ -1,0 +1,275 @@
+import React, { FormEvent, useCallback } from 'react';
+import { useForm, usePage } from '@inertiajs/react';
+import { useDropzone } from 'react-dropzone';
+import TaskDescriptionEditor from './TaskDescriptionEditor';
+import TaskMetadataSidebar from './TaskMetadataSidebar';
+import TaskChecklist from './TaskChecklist';
+import TaskComments from './TaskComments';
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
+interface Project {
+    id: number;
+    name: string;
+    key: string;
+}
+
+interface Board {
+    id: number;
+    name: string;
+}
+
+interface Task {
+    id: number;
+    formatted_id: string;
+    title: string;
+    description: string;
+    priority: string;
+    assignee_id: number | string;
+    start_date: string;
+    due_date: string;
+    story_points: number;
+    labels: string[];
+    checklists: any[];
+    comments: any[];
+}
+
+interface ColumnProps {
+    id: string;
+    db_id: number;
+    title: string;
+}
+
+interface Props {
+    isOpen: boolean;
+    onClose: () => void;
+    task: Task | null;
+    initialColumnIdForCreate?: number | null;
+    current_project: Project;
+    active_board: Board;
+    columns: ColumnProps[];
+    project_members: User[];
+    canEdit: boolean;
+    canDelete: boolean;
+}
+
+const TaskModal = ({ 
+    isOpen, 
+    onClose, 
+    task, 
+    initialColumnIdForCreate, 
+    current_project, 
+    active_board, 
+    columns, 
+    project_members, 
+    canEdit, 
+    canDelete 
+}: Props) => {
+    const { auth } = usePage<any>().props;
+    const isEditMode = !!task;
+    
+    const formatDate = (dateStr: any) => {
+        if (!dateStr) return '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            return d.toISOString().split('T')[0];
+        } catch (e) {
+            return '';
+        }
+    };
+
+    const initialColumnId = task ? columns.find(c => c.db_id === task.id)/* This was wrong in original, should find by task relation but original code used tasks.some */ ? '' : '' : '';
+    // Actually, let's stick to a safer way to find initial column
+    const taskColId = task ? columns.find(c => (c as any).tasks?.some((t: any) => t.id === task.id))?.db_id : null;
+    const finalInitialColId = taskColId || initialColumnIdForCreate || columns[0]?.db_id || '';
+
+    const { data, setData, post, patch, delete: destroy, processing, errors } = useForm({
+        title: task?.title || '',
+        description: task?.description || '',
+        priority: task?.priority || 'medium',
+        assignee_id: task?.assignee_id || '',
+        board_column_id: finalInitialColId,
+        start_date: formatDate(task?.start_date),
+        due_date: formatDate(task?.due_date),
+        story_points: task?.story_points || 0,
+        labels: task?.labels || [],
+    });
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        alert(`File upload simulation: ${acceptedFiles[0].name}. (Backend endpoint ready in AttachmentController)`);
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        if (!canEdit) return;
+
+        if (isEditMode) {
+            patch(`/tasks/${task.id}`, {
+                onSuccess: () => onClose(),
+                preserveScroll: true,
+            });
+        } else {
+            post(`/projects/${current_project.id}/boards/${active_board.id}/tasks`, {
+                onSuccess: () => onClose(),
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const handleDelete = () => {
+        if (!canDelete || !task) return;
+        if (confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+            destroy(`/tasks/${task.id}`, {
+                onSuccess: () => onClose(),
+                preserveScroll: true,
+            });
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex justify-end">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+            
+            <div className="relative bg-card border-l border-border shadow-2xl w-full sm:w-[800px] md:w-[900px] h-full flex flex-col overflow-hidden animate-in slide-in-from-right">
+                <header className="px-6 py-4 border-b border-border flex justify-between items-center bg-background">
+                    <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 flex-1">
+                        {isEditMode ? (
+                            <>
+                                <span className="text-muted-foreground font-mono text-sm">{task.formatted_id}</span>
+                                <input
+                                    type="text"
+                                    value={data.title}
+                                    onChange={e => setData('title', e.target.value)}
+                                    disabled={!canEdit}
+                                    className="bg-transparent border-none focus:ring-0 text-xl font-semibold text-foreground w-full p-0"
+                                    placeholder="Task Title"
+                                />
+                            </>
+                        ) : 'Create New Task'}
+                    </h2>
+                    <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-sm hover:bg-muted">
+                        <span className="material-icons">close</span>
+                    </button>
+                </header>
+
+                <div className="flex-1 overflow-hidden">
+                    <form id="task-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-12 h-full">
+                        
+                        {/* MAIN CONTENT AREA */}
+                        <div className="md:col-span-8 p-6 space-y-8 h-full overflow-y-auto">
+                            
+                            {!isEditMode && (
+                                <div className="space-y-1.5" onClick={(e) => e.stopPropagation()}>
+                                    <label htmlFor="task-title" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Title</label>
+                                    <input 
+                                        id="task-title"
+                                        name="title"
+                                        autoComplete="off"
+                                        type="text" 
+                                        value={data.title}
+                                        onChange={e => setData('title', e.target.value)}
+                                        disabled={!canEdit}
+                                        className="w-full bg-background border border-border rounded-sm px-3 py-2 text-sm text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                                        placeholder="E.g., Implement secure login portal"
+                                        required
+                                    />
+                                    {errors.title && <div className="text-xs text-destructive">{errors.title}</div>}
+                                </div>
+                            )}
+
+                            <TaskDescriptionEditor 
+                                content={data.description}
+                                onChange={(html) => setData('description', html)}
+                                canEdit={canEdit}
+                            />
+
+                            {/* ATTACHMENTS PREVIEW */}
+                            <div {...getRootProps()} className="space-y-1.5" onClick={(e) => e.stopPropagation()}>
+                                <input {...getInputProps()} />
+                                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+                                    <span className="material-icons text-[16px] text-muted-foreground">attach_file</span>
+                                    Attachments
+                                </h3>
+                                <div className={`border-2 border-dashed border-border rounded-lg bg-muted/10 p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer ${isDragActive ? 'bg-primary/5 border-primary' : 'hover:bg-muted/20 hover:border-primary/50'}`}>
+                                    <span className="material-icons text-[24px] text-muted-foreground mb-2">cloud_upload</span>
+                                    <span className="text-sm text-muted-foreground">Drag & drop files or click to browse</span>
+                                </div>
+                            </div>
+
+                            {isEditMode && task && (
+                                <>
+                                    <TaskChecklist 
+                                        taskId={task.id}
+                                        checklists={task.checklists || []}
+                                        canEdit={canEdit}
+                                    />
+                                    <TaskComments 
+                                        taskId={task.id}
+                                        initialComments={task.comments || []}
+                                        authUser={auth}
+                                    />
+                                </>
+                            )}
+                        </div>
+
+                        {/* METADATA SIDEBAR */}
+                        <TaskMetadataSidebar 
+                            data={data}
+                            setData={setData}
+                            columns={columns}
+                            project_members={project_members}
+                            canEdit={canEdit}
+                            errors={errors}
+                        />
+                    </form>
+                </div>
+
+                <footer className="px-6 py-4 border-t border-border flex justify-between items-center bg-card">
+                    <div>
+                        {isEditMode && canDelete && (
+                            <button 
+                                type="button" 
+                                onClick={handleDelete}
+                                disabled={processing}
+                                className="text-xs text-destructive hover:text-destructive transition-colors px-3 py-1.5 border border-destructive/30 hover:bg-destructive/20 rounded-sm"
+                            >
+                                Delete Task
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex gap-3">
+                        <button 
+                            type="button" 
+                            onClick={onClose}
+                            className="text-xs text-muted-foreground hover:text-foreground px-4 py-2 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        {canEdit && (
+                            <button 
+                                type="submit" 
+                                form="task-form"
+                                disabled={processing}
+                                className="bg-primary hover:bg-primary/90 text-white text-xs px-6 py-2 rounded-sm transition-colors shadow-sm disabled:opacity-50"
+                            >
+                                {processing ? 'Saving...' : 'Save Task'}
+                            </button>
+                        )}
+                    </div>
+                </footer>
+            </div>
+        </div>
+    );
+};
+
+export default TaskModal;

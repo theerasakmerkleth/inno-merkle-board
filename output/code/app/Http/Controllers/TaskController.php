@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use App\Helpers\Sanitizer;
 
 class TaskController extends Controller
 {
@@ -31,6 +32,10 @@ class TaskController extends Controller
             'labels.*' => 'string|max:50',
         ]);
 
+        if (isset($validated['description'])) {
+            $validated['description'] = Sanitizer::clean($validated['description']);
+        }
+
         $validated['project_id'] = $project->id;
         $validated['board_id'] = $board->id;
         $validated['reporter_id'] = auth()->id();
@@ -48,7 +53,7 @@ class TaskController extends Controller
         }
 
         // Check if assigned to an AI agent
-        if ($validated['assignee_id']) {
+        if (isset($validated['assignee_id']) && $validated['assignee_id']) {
             $assignee = User::find($validated['assignee_id']);
             if ($assignee && $assignee->hasRole('AI Agent')) {
                 $validated['is_ai_assigned'] = true;
@@ -76,6 +81,10 @@ class TaskController extends Controller
             'labels' => 'nullable|array',
             'labels.*' => 'string|max:50',
         ]);
+
+        if (isset($validated['description'])) {
+            $validated['description'] = Sanitizer::clean($validated['description']);
+        }
 
         if (isset($validated['board_column_id'])) {
             $newColumn = \App\Models\BoardColumn::findOrFail($validated['board_column_id']);
