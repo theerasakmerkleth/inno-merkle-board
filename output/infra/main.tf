@@ -95,8 +95,20 @@ resource "google_cloud_run_v2_service" "taskflow_app" {
       max_instance_count = 10 # Cap costs while handling traffic spikes
     }
 
+    volumes {
+      name = "cloudsql"
+      cloud_sql_instance {
+        instances = [google_sql_database_instance.postgres_primary.connection_name]
+      }
+    }
+
     containers {
       image = "gcr.io/${var.gcp_project_id}/taskflow-app:latest" # Deployed via CI
+
+      volume_mounts {
+        name       = "cloudsql"
+        mount_path = "/cloudsql"
+      }
 
       # Environment Variables mapped from managed infrastructure
       env {
@@ -109,7 +121,7 @@ resource "google_cloud_run_v2_service" "taskflow_app" {
       }
       env {
         name  = "DB_HOST"
-        value = google_sql_database_instance.postgres_primary.public_ip_address
+        value = "/cloudsql/${google_sql_database_instance.postgres_primary.connection_name}"
       }
       env {
         name  = "DB_DATABASE"
@@ -120,12 +132,20 @@ resource "google_cloud_run_v2_service" "taskflow_app" {
         value = google_sql_user.db_app_user.name
       }
       env {
+        name  = "DB_PASSWORD"
+        value = var.db_password
+      }
+      env {
         name  = "REDIS_HOST"
         value = google_redis_instance.taskflow_redis.host
       }
       env {
         name  = "QUEUE_CONNECTION"
         value = "redis"
+      }
+      env {
+        name  = "APP_KEY"
+        value = "base64:v1V/q6w48+0i3FvB+4qYc5KqP0+P+K/xYv9XkE/7c7k="
       }
     }
   }

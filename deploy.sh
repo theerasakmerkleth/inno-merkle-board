@@ -28,7 +28,7 @@ if [ ! -f "Dockerfile" ]; then
     echo "❌ Error: Dockerfile not found in output/code/"
     exit 1
 fi
-docker build -t $IMAGE_NAME .
+docker build --platform linux/amd64 -t $IMAGE_NAME .
 cd ../..
 
 # 3. Push the Docker Image to GCR
