@@ -667,6 +667,7 @@ interface TaskModalProps {
 }
 
 const TaskModal = ({ isOpen, onClose, task, initialColumnIdForCreate, current_project, active_board, columns, project_members, canEdit, canDelete }: TaskModalProps) => {
+    const { auth } = usePage<any>().props;
     const isEditMode = !!task;
     
     // Helper to format date for <input type="date">
