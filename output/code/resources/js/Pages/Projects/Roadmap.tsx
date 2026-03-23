@@ -185,19 +185,6 @@ export default function Roadmap({ project, tasks }: PageProps) {
                         </div>
                         
                         <div className="flex items-center gap-2 md:gap-4">
-                            {/* View Toggles (Segmented Control Style) */}
-                            <div className="hidden sm:flex bg-muted rounded-sm p-0.5 border border-border/50">
-                                <Link href={`/projects/${project.key}/boards`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                                    Board
-                                </Link>
-                                <div className="px-4 py-1.5 text-xs font-medium bg-background text-foreground shadow-sm rounded-sm">
-                                    Roadmap
-                                </div>
-                                <Link href={`/projects/${project.key}/reports`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                                    Reports
-                                </Link>
-                            </div>
-
                             {/* Roadmap Actions */}
                             <div className="flex gap-2">
                                 <button 
@@ -222,6 +209,19 @@ export default function Roadmap({ project, tasks }: PageProps) {
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
+                            </div>
+
+                            {/* View Toggles (Segmented Control Style) */}
+                            <div className="hidden sm:flex bg-muted rounded-sm p-0.5 border border-border/50">
+                                <Link href={`/projects/${project.key}/boards`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                    Board
+                                </Link>
+                                <div className="px-4 py-1.5 text-xs font-medium bg-background text-foreground shadow-sm rounded-sm">
+                                    Roadmap
+                                </div>
+                                <Link href={`/projects/${project.key}/reports`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                    Reports
+                                </Link>
                             </div>
                         </div>
                     </div>

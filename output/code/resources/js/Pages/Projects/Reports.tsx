@@ -142,18 +142,6 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
                         </div>
                         
                         <div className="flex items-center gap-2 md:gap-4">
-                            {/* View Toggles (Segmented Control Style) */}
-                            <div className="hidden sm:flex bg-muted rounded-sm p-0.5 border border-border/50">
-                                <Link href={`/projects/${project.key}/boards`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                                    Board
-                                </Link>
-                                <Link href={`/projects/${project.key}/roadmap`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                                    Roadmap
-                                </Link>
-                                <div className="px-4 py-1.5 text-xs font-medium bg-background text-foreground shadow-sm rounded-sm">
-                                    Reports
-                                </div>
-                            </div>
                             {/* Export Menu */}
                             <div className="flex gap-2">
                                 <DropdownMenu>
@@ -181,6 +169,19 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
+                            </div>
+
+                            {/* View Toggles (Segmented Control Style) */}
+                            <div className="hidden sm:flex bg-muted rounded-sm p-0.5 border border-border/50">
+                                <Link href={`/projects/${project.key}/boards`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                    Board
+                                </Link>
+                                <Link href={`/projects/${project.key}/roadmap`} className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                    Roadmap
+                                </Link>
+                                <div className="px-4 py-1.5 text-xs font-medium bg-background text-foreground shadow-sm rounded-sm">
+                                    Reports
+                                </div>
                             </div>
                         </div>
                     </div>
