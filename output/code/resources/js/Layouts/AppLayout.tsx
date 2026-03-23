@@ -11,6 +11,8 @@ interface Project {
   name: string;
 }
 
+import { NotificationInbox } from '@/components/NotificationInbox';
+
 interface AppLayoutProps {
   children: ReactNode;
   breadcrumbs?: ReactNode;
@@ -174,6 +176,7 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
                   >
                       <span className="material-icons">search</span>
                   </button>
+                  <NotificationInbox />
               </div>
           </header>
           

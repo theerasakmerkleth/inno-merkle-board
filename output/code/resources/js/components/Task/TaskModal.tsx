@@ -6,7 +6,9 @@ import TaskMetadataSidebar from './TaskMetadataSidebar';
 import TaskChecklist from './TaskChecklist';
 import TaskComments from './TaskComments';
 import MoveTaskDialog from './MoveTaskDialog';
+import { ActivityLogTimeline } from './ActivityLogTimeline';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
     id: number;
@@ -233,11 +235,27 @@ const TaskModal = ({
                                         checklists={task.checklists || []}
                                         canEdit={canEdit}
                                     />
-                                    <TaskComments 
-                                        taskId={task.id}
-                                        initialComments={task.comments || []}
-                                        authUser={auth}
-                                    />
+                                    
+                                    <Tabs defaultValue="comments" className="w-full mt-6">
+                                        <TabsList className="grid w-full grid-cols-2 bg-muted/50 border border-border rounded-md p-1 mb-4 h-10">
+                                            <TabsTrigger value="comments" className="text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded">
+                                                Comments
+                                            </TabsTrigger>
+                                            <TabsTrigger value="history" className="text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded">
+                                                History
+                                            </TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="comments" className="outline-none">
+                                            <TaskComments 
+                                                taskId={task.id}
+                                                initialComments={task.comments || []}
+                                                authUser={auth}
+                                            />
+                                        </TabsContent>
+                                        <TabsContent value="history" className="outline-none border border-border rounded-md p-4 bg-muted/10">
+                                            <ActivityLogTimeline taskId={task.id} />
+                                        </TabsContent>
+                                    </Tabs>
                                 </>
                             )}
                         </div>
