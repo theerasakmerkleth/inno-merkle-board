@@ -17,6 +17,8 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\ExportController;
+
 // Auth Routes (F08)
 Route::get('/login', [LoginController::class, 'show'])->name('login');
 Route::post('/login', [LoginController::class, 'authenticate']);
@@ -80,6 +82,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy']);
     Route::get('/tasks/{task}/comments', [CommentController::class, 'index']);
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store']);
+
+    // Exports
+    Route::get('/projects/{project}/export', [ExportController::class, 'exportTasks']);
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
