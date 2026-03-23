@@ -41,27 +41,47 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
     const dashboardRef = useRef<HTMLDivElement>(null);
 
     const handleExportPDF = async () => {
-        if (!dashboardRef.current) return;
+        if (!dashboardRef.current) {
+            toast.error('Dashboard container not found.');
+            return;
+        }
+        
         const toastId = toast.loading('Generating PDF...');
+        
         try {
+            // Add a small delay to ensure any pending renders/animations complete
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             const canvas = await html2canvas(dashboardRef.current, {
-                scale: 2,
-                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--background').trim() || '#ffffff',
+                scale: 2, // High resolution
+                backgroundColor: '#ffffff', // Force solid white background to prevent transparent/black rendering
                 logging: false,
-                useCORS: true
+                useCORS: true,
+                // These options help with SVG and complex CSS rendering
+                allowTaint: true,
+                windowWidth: dashboardRef.current.scrollWidth,
+                windowHeight: dashboardRef.current.scrollHeight
             });
+            
             const imgData = canvas.toDataURL('image/jpeg', 1.0);
 
-            // Landscape orientation, A4
+            // Landscape orientation, A4 (297 x 210 mm)
             const pdf = new jsPDF('l', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfWidth = pdf.internal.pageSize.getWidth(); // 297
+            
+            // Calculate height proportional to the canvas width to fit the PDF width
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
+            // Add image to PDF at (x: 0, y: 0)
             pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`${project.key}_Agile_Insights_${new Date().toISOString().split('T')[0]}.pdf`);
+            
+            const filename = `${project.key}_Agile_Insights_${new Date().toISOString().split('T')[0]}.pdf`;
+            pdf.save(filename);
+            
             toast.success('PDF downloaded successfully!', { id: toastId });
         } catch (error) {
-            toast.error('Failed to generate PDF.', { id: toastId });
+            console.error('PDF Generation Error:', error);
+            toast.error('Failed to generate PDF. See console for details.', { id: toastId });
         }
     };
 
