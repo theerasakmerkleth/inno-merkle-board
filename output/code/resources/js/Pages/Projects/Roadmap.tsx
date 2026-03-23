@@ -249,9 +249,9 @@ export default function Roadmap({ project, tasks }: PageProps) {
                     <div className="flex min-h-full" style={{ width: `calc(256px + ${days.length * cellWidth}px)` }}>
                         
                         {/* 1. STICKY TASK SIDEBAR */}
-                        <div className="w-64 flex-shrink-0 bg-card border-r border-border sticky left-0 z-30">
+                        <div className="w-[256px] flex-shrink-0 bg-background border-r border-border/50 sticky left-0 z-20 shadow-[2px_0_10px_-4px_rgba(0,0,0,0.15)]">
                             {/* Sidebar Header Space (to align with date headers) */}
-                            <div className="h-[60px] border-b border-border bg-card sticky top-0 flex items-center px-4 z-30 shadow-sm">
+                            <div className="h-[60px] border-b border-border bg-background sticky top-0 flex items-center px-4 z-20 shadow-sm">
                                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Project Tasks</span>
                             </div>
                             
@@ -266,8 +266,8 @@ export default function Roadmap({ project, tasks }: PageProps) {
                                     </div>
                                 ))}
                                 {tasksWithoutDates.length > 0 && (
-                                    <div className="p-4 bg-amber-500/5 mt-2 border-y border-amber-500/10">
-                                        <div className="flex items-center gap-1.5 text-amber-600">
+                                    <div className="p-4 bg-amber-500/10 mt-2 border-y border-amber-500/20">
+                                        <div className="flex items-center gap-1.5 text-amber-700">
                                             <span className="material-icons text-[14px]">warning_amber</span>
                                             <span className="text-[9px] font-bold leading-tight">{tasksWithoutDates.length} tasks missing dates</span>
                                         </div>
@@ -302,10 +302,10 @@ export default function Roadmap({ project, tasks }: PageProps) {
                                             <div 
                                                 key={i} 
                                                 style={{ width: `${cellWidth}px` }}
-                                                className={`h-full border-r border-border/20 flex flex-col items-center justify-center text-[9px] ${isWeekend ? 'bg-muted/10' : ''} ${isToday ? 'bg-primary/5' : ''}`}
+                                                className={`h-full border-r border-border/20 flex flex-col items-center justify-center text-[9px] ${isWeekend ? 'bg-muted/30' : ''} ${isToday ? 'bg-primary/10' : ''}`}
                                             >
                                                 {viewMode === 'days' && <span className="text-[8px] text-muted-foreground/60">{day.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0)}</span>}
-                                                {viewMode !== 'months' && <span className={`${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>{day.getDate()}</span>}
+                                                {viewMode !== 'months' && <span className={`${isToday ? 'text-primary font-extrabold' : 'text-muted-foreground'}`}>{day.getDate()}</span>}
                                             </div>
                                         );
                                     })}
@@ -320,7 +320,7 @@ export default function Roadmap({ project, tasks }: PageProps) {
                                         <div 
                                             key={i} 
                                             style={{ width: `${cellWidth}px` }}
-                                            className={`h-full border-r border-border/20 ${day.getDay() === 0 || day.getDay() === 6 ? 'bg-muted/[0.03]' : ''}`}
+                                            className={`h-full border-r border-border/20 ${day.getDay() === 0 || day.getDay() === 6 ? 'bg-muted/20' : ''}`}
                                         />
                                     ))}
                                 </div>
@@ -343,13 +343,13 @@ export default function Roadmap({ project, tasks }: PageProps) {
                                                         ...getTaskStyle(task),
                                                         backgroundColor: task.status === 'done' ? 'hsl(var(--muted))' : task.priority === 'highest' || task.priority === 'high' ? 'hsl(var(--destructive))' : task.priority === 'low' || task.priority === 'lowest' ? 'hsl(var(--muted-foreground))' : 'hsl(var(--primary))'
                                                     }}
-                                                    className={`absolute top-2 h-6 rounded-md flex items-center px-2 transition-all cursor-pointer shadow-sm group-hover:ring-2 group-hover:ring-primary/20 z-10 overflow-hidden ${
+                                                    className={`absolute top-2 h-6 rounded-md flex items-center px-2 transition-all cursor-pointer shadow-sm border border-black/5 group-hover:ring-2 group-hover:ring-primary/50 group-hover:brightness-110 z-10 overflow-hidden ${
                                                         task.status === 'done' ? 'text-muted-foreground' : 'text-white'
                                                     }`}
                                                     title={`${task.title} (${task.start_date} to ${task.due_date})`}
                                                 >
                                                     {cellWidth > 20 && (
-                                                        <span className="text-[10px] font-medium truncate leading-none drop-shadow-sm">{task.title}</span>
+                                                        <span className="text-[10px] font-medium truncate leading-none drop-shadow-md">{task.title}</span>
                                                     )}
                                                     {task.has_conflict && (
                                                         <span className="material-icons text-[14px] text-destructive ml-auto animate-pulse">warning</span>
