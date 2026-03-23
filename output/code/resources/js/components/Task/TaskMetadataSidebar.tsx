@@ -37,23 +37,25 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
     const customStyles = {
         control: (base: any, state: any) => ({
             ...base,
-            backgroundColor: 'hsl(var(--background))',
+            backgroundColor: '#ffffff',
             borderColor: state.isFocused ? 'hsl(var(--ring))' : 'hsl(var(--border))',
             fontSize: '0.75rem',
             minHeight: '32px',
             borderRadius: '0.125rem',
             boxShadow: 'none',
+            color: '#000000',
             '&:hover': {
                 borderColor: 'hsl(var(--ring))',
             },
         }),
         menu: (base: any) => ({
             ...base,
-            backgroundColor: 'hsl(var(--background))',
+            backgroundColor: '#ffffff',
             border: '1px solid hsl(var(--border))',
             fontSize: '0.75rem',
             boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
             zIndex: 9999,
+            color: '#000000',
         }),
         menuList: (base: any) => ({
             ...base,
@@ -68,9 +70,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                     : 'transparent',
             color: state.isSelected 
                 ? 'hsl(var(--primary-foreground))' 
-                : state.isFocused 
-                    ? 'hsl(var(--accent-foreground))' 
-                    : 'hsl(var(--foreground))',
+                : '#000000',
             borderRadius: '0.125rem',
             cursor: 'pointer',
             padding: '6px 10px',
@@ -103,15 +103,15 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
         }),
         placeholder: (base: any) => ({
             ...base,
-            color: 'hsl(var(--muted-foreground))',
+            color: '#666666',
         }),
         input: (base: any) => ({
             ...base,
-            color: 'hsl(var(--foreground))',
+            color: '#000000',
         }),
         singleValue: (base: any) => ({
             ...base,
-            color: 'hsl(var(--foreground))',
+            color: '#000000',
         }),
         menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
     };
