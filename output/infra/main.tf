@@ -27,6 +27,12 @@ variable "gcp_region" {
   default     = "asia-southeast1" # Singapore
 }
 
+variable "db_password" {
+  type        = string
+  description = "The database password"
+  sensitive   = true
+}
+
 # ------------------------------------------------------------------------------
 # 1. Cloud SQL for PostgreSQL (Primary Datastore)
 # ------------------------------------------------------------------------------
@@ -59,7 +65,7 @@ resource "google_sql_database" "taskflow_db" {
 resource "google_sql_user" "db_app_user" {
   name     = "taskflow_laravel"
   instance = google_sql_database_instance.postgres_primary.name
-  password = "insecure-placeholder-use-secret-manager"
+  password = var.db_password
 }
 
 # ------------------------------------------------------------------------------
