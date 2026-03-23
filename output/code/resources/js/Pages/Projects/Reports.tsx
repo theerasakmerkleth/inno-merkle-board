@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { 
@@ -52,28 +52,20 @@ export default function Reports({ project, velocity, burndown, activeBoardName }
             // Add a small delay to ensure any pending renders/animations complete
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            const canvas = await html2canvas(dashboardRef.current, {
-                scale: 2, // High resolution
-                backgroundColor: '#ffffff', // Force solid white background to prevent transparent/black rendering
-                logging: false,
-                useCORS: true,
-                // These options help with SVG and complex CSS rendering
-                allowTaint: true,
-                windowWidth: dashboardRef.current.scrollWidth,
-                windowHeight: dashboardRef.current.scrollHeight
+            const dataUrl = await toPng(dashboardRef.current, {
+                pixelRatio: 2, // High resolution
+                backgroundColor: '#ffffff', // Force solid white background
             });
-            
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
 
             // Landscape orientation, A4 (297 x 210 mm)
             const pdf = new jsPDF('l', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth(); // 297
             
-            // Calculate height proportional to the canvas width to fit the PDF width
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const imgProps = pdf.getImageProperties(dataUrl);
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
             // Add image to PDF at (x: 0, y: 0)
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
             
             const filename = `${project.key}_Agile_Insights_${new Date().toISOString().split('T')[0]}.pdf`;
             pdf.save(filename);
