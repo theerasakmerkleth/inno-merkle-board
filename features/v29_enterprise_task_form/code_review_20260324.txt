@@ -1,0 +1,22 @@
+# Code Review Report: Enterprise Task Management Form (Jira-Style)
+
+## 🟢 Strengths
+- **Enterprise UI Layout:** การปรับปรุงจาก Modal เป็น Split-Pane Sheet (CSS Grid 8:4) ทำออกมาได้ดีมาก แบ่งสัดส่วนข้อมูลหลัก (Content) และข้อมูลประกอบ (Metadata) ได้ชัดเจนตามสไตล์ Jira
+- **Rich Text Integration:** การใช้ TipTap พร้อมอัปเกรดแถบเครื่องมือให้รองรับ Heading, Blockquote และ CodeBlock ช่วยยกระดับความสามารถในการเขียน Spec ของ Task ได้จริง
+- **Optimistic UI & Kinetics:** ระบบ Drag and Drop (`dnd-kit`) ที่ปรับปรุงใหม่โดยใช้ Namespace Prefix (`task-`, `column-`) แก้ไขปัญหา ID Collision ได้เด็ดขาด และการใช้ `DragOverlay` ช่วยให้ UX ลื่นไหลไม่กระตุก
+- **Security & Data Integrity:** การแก้ไข Model `Task.php` จาก `#[Fillable]` attribute มาเป็น `protected $fillable` มาตรฐาน ช่วยให้ระบบ Mass Assignment ของ Laravel ทำงานได้อย่างถูกต้องและปลอดภัย
+
+## 🔴 Critical Issues
+- **Missing PRD Requirement (Labels):** ในไฟล์ `KanbanBoard.tsx` ส่วนของ Metadata Sidebar ยังขาดการ Implement ฟิลด์ **"Labels / Tags"** ตามที่ระบุไว้ใน PRD US-1.1 และ Design Spec 2.1 ซึ่งเป็นฟีเจอร์สำคัญสำหรับการคัดกรอง Task ในระดับ Enterprise
+- **Error Handling (Comments):** ในฟังก์ชัน `handlePostComment` มีการใช้ `fetch` แบบดิบๆ แม้จะมีการใส่ CSRF Token แล้ว แต่ยังขาดการเช็ค `res.ok` ก่อนจะเรียก `.json()` และยังไม่มีการจัดการ UI เมื่อเกิด Error (เช่น แสดง Toast หรือ Error message)
+
+## 🟡 Suggestions
+- **Component Extraction:** คอมโพเนนต์ `TaskModal` เริ่มมีขนาดใหญ่เกินไป (High Cyclomatic Complexity) ควรแยกส่วน `MetadataSidebar`, `AttachmentZone` และ `CommentSection` ออกเป็น Atomic Components เพื่อให้อ่านง่ายและทำ Unit Test ได้สะดวกขึ้น
+- **Type Safety:** ใน `TaskModal` มีการใช้ `usePage<any>()` ซึ่งทำให้เสียความสามารถของ TypeScript ในการตรวจเช็ค `auth` และ `props` อื่นๆ ควรประกาศ Interface ให้ชัดเจน
+
+## 🚀 Performance & Security Tips
+- **Performance:** แนะนำให้ใช้ `React.memo` สำหรับ `TaskCard` เนื่องจากใน Kanban Board ขนาดใหญ่ที่มีการลากการ์ดบ่อยๆ การ Re-render การ์ดทั้งหมดใน List อาจทำให้เกิด Input Lag ได้
+- **Security:** ตรวจสอบว่า `editor.getHTML()` ที่ส่งมาจาก TipTap มีการ sanitize ฝั่ง Backend หรือไม่ (แนะนำให้ใช้ Library อย่าง `mews/purifier` ใน Laravel) เพื่อป้องกันช่องโหว่ XSS ในกรณีที่ User พยายามฝัง Script ผ่าน Rich Text
+
+## ✅ Final Verdict: REWORK REQUIRED
+*เหตุผล: เนื่องจากยังขาดฟีเจอร์ Labels ตาม PRD และโครงสร้าง TaskModal เริ่มมีความซับซ้อนสูงเกินเกณฑ์การบำรุงรักษาในระยะยาว*
