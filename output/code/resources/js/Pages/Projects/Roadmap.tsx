@@ -342,7 +342,7 @@ export default function Roadmap({ project, tasks }: PageProps) {
                                                 <div 
                                                     style={{
                                                         ...getTaskStyle(task),
-                                                        backgroundColor: task.status === 'done' ? 'hsl(var(--muted))' : task.priority === 'highest' || task.priority === 'high' ? 'hsl(var(--destructive))' : task.priority === 'low' || task.priority === 'lowest' ? 'hsl(var(--muted-foreground))' : 'hsl(var(--primary))'
+                                                        backgroundColor: task.status === 'done' ? 'var(--muted)' : task.priority === 'highest' || task.priority === 'high' ? 'var(--destructive)' : task.priority === 'low' || task.priority === 'lowest' ? 'var(--muted-foreground)' : 'var(--primary)'
                                                     }}
                                                     className={`absolute top-2 h-6 rounded-md flex items-center px-2 transition-all cursor-pointer shadow-sm border border-black/5 group-hover:ring-2 group-hover:ring-primary/50 group-hover:brightness-110 z-10 overflow-hidden ${
                                                         task.status === 'done' ? 'text-muted-foreground' : 'text-white'
