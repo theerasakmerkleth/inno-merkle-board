@@ -25,13 +25,14 @@ interface Props {
     taskId: number;
     currentProject: Project;
     currentBoard: Board;
+    currentColumnId: number | string;
     availableProjects: Project[];
 }
 
-const MoveTaskDialog = ({ isOpen, onClose, taskId, currentProject, currentBoard, availableProjects }: Props) => {
+const MoveTaskDialog = ({ isOpen, onClose, taskId, currentProject, currentBoard, currentColumnId, availableProjects }: Props) => {
     const [selectedProjectId, setSelectedProjectId] = useState<number | string>(currentProject.id);
     const [selectedBoardId, setSelectedBoardId] = useState<number | string>(currentBoard.id);
-    const [selectedColumnId, setSelectedColumnId] = useState<number | string>('');
+    const [selectedColumnId, setSelectedColumnId] = useState<number | string>(currentColumnId);
 
     const [dynamicBoards, setDynamicBoards] = useState<any[]>([]);
     const [dynamicColumns, setDynamicColumns] = useState<ColumnProps[]>([]);
@@ -57,7 +58,13 @@ const MoveTaskDialog = ({ isOpen, onClose, taskId, currentProject, currentBoard,
                         
                         setSelectedBoardId(targetBoard.id);
                         setDynamicColumns(targetBoard.columns);
-                        setSelectedColumnId(targetBoard.columns[0]?.id || '');
+                        
+                        setSelectedColumnId(prevColId => {
+                            if (targetBoard.columns.find((c: any) => c.id == prevColId)) {
+                                return prevColId;
+                            }
+                            return targetBoard.columns[0]?.id || '';
+                        });
                     } else {
                         setSelectedBoardId('');
                         setSelectedColumnId('');
@@ -78,10 +85,12 @@ const MoveTaskDialog = ({ isOpen, onClose, taskId, currentProject, currentBoard,
             const board = dynamicBoards.find(b => b.id == selectedBoardId);
             if (board) {
                 setDynamicColumns(board.columns);
-                // Keep selected column if it exists in new board, otherwise pick first
-                if (!board.columns.find((c: any) => c.id == selectedColumnId)) {
-                    setSelectedColumnId(board.columns[0]?.id || '');
-                }
+                setSelectedColumnId(prevColId => {
+                    if (!board.columns.find((c: any) => c.id == prevColId)) {
+                        return board.columns[0]?.id || '';
+                    }
+                    return prevColId;
+                });
             }
         }
     }, [selectedBoardId, dynamicBoards, isOpen]);

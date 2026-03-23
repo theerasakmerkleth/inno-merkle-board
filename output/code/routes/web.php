@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/projects/reorder', [ProjectController::class, 'reorder']);
     Route::patch('/projects/{project}', [ProjectController::class, 'update']);
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
-    Route::get('/api/projects/{project}/structure', [ProjectController::class, 'structure']);
+    Route::get('/api/projects/{project:key}/structure', [ProjectController::class, 'structure']);
 
     // Workspace & Task Views
     Route::get('/projects/{project_key}/boards/{board_id?}', [BoardController::class, 'show'])->name('projects.board');

@@ -296,6 +296,7 @@ const TaskModal = ({
                     taskId={task.id}
                     currentProject={current_project}
                     currentBoard={active_board}
+                    currentColumnId={finalInitialColId}
                     availableProjects={available_projects}
                 />
             )}

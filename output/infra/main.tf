@@ -153,7 +153,7 @@ resource "google_cloud_run_v2_service" "taskflow_app" {
       }
       env {
         name  = "DEPLOYMENT_TRIGGER"
-        value = "force_update_for_nginx_https_fix"
+        value = "force_update_for_route_binding_404_fix"
       }
     }
   }
