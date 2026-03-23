@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title inertia>{{ config('app.name', 'TaskFlow AI') }}</title>
+        <link rel="icon" type="image/png" href="/favicon.png">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.jsx'])

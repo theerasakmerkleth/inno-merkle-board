@@ -22,7 +22,7 @@ class TaskUpdated implements ShouldBroadcast
     public function __construct(Task $task)
     {
         // Load the necessary relations for the frontend
-        $this->task = $task->load('assignee', 'project');
+        $this->task = $task->load('assignee', 'project', 'checklists.items');
     }
 
     /**

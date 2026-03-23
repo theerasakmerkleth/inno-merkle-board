@@ -74,7 +74,7 @@ class BoardController extends Controller
         }
 
         $columnsData = $activeBoard->columns()->with(['tasks' => function($q) {
-            $q->with(['assignee', 'project'])->orderBy('order_in_column');
+            $q->with(['assignee', 'project', 'checklists.items'])->orderBy('order_in_column');
         }])->get();
 
         $columns = $columnsData->map(function($col) {

@@ -9,6 +9,7 @@ class ChecklistController extends Controller
 {
     public function store(Request $request, Task $task)
     {
+        // Basic authorization
         if (! $task->project->users->contains(auth()->id()) && ! auth()->user()->hasRole('Admin')) {
             abort(403);
         }
@@ -17,8 +18,8 @@ class ChecklistController extends Controller
             'title' => 'required|string|max:255',
         ]);
 
-        $checklist = $task->checklists()->create($request->only('title'));
+        $task->checklists()->create($request->only('title'));
 
-        return response()->json($checklist->load('items'), 201);
+        return redirect()->back()->with('success', 'Checklist created.');
     }
 }

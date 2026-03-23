@@ -23,66 +23,66 @@ Route::post('/login', [LoginController::class, 'authenticate']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
-
+    
+    // Core Navigation (Dashboard & Analytics)
     Route::get('/', [DashboardController::class, 'myTasks'])->name('home');
     Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
-    Route::get('/tasks/{task}/comments', [CommentController::class, 'index']);
-    Route::post('/tasks/{task}/comments', [CommentController::class, 'store']);
 
+    // Project Hub & Management (F15)
     Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::patch('/projects/reorder', [ProjectController::class, 'reorder']);
+    Route::patch('/projects/{project}', [ProjectController::class, 'update']);
+    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+
+    // Workspace & Task Views
     Route::get('/projects/{project_key}/boards/{board_id?}', [BoardController::class, 'show'])->name('projects.board');
     Route::get('/projects/{project_key}/roadmap', [RoadmapController::class, 'show'])->name('projects.roadmap');
     Route::get('/projects/{project_key}/reports', [ProjectStatsController::class, 'index'])->name('projects.reports');
     Route::get('/projects/{project_key}/settings', [ProjectController::class, 'edit'])->name('projects.settings');
 
-    // Task Dependencies
-    Route::post('/tasks/{task}/dependencies', [RoadmapController::class, 'addDependency']);
-    Route::delete('/tasks/{task}/dependencies/{blockedBy}', [RoadmapController::class, 'removeDependency']);
-
     // User Management Routes (F07)
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserController::class, 'store']);
     Route::patch('/users/{user}/role', [UserController::class, 'updateRole']);
     Route::patch('/users/{user}/toggle', [UserController::class, 'toggleActive']);
-    Route::patch('/projects/{project}', [ProjectController::class, 'update']);
-    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
 
     // Project Member Routes (F16)
     Route::post('/projects/{project}/members', [ProjectMemberController::class, 'store']);
     Route::patch('/projects/{project}/members/{user}', [ProjectMemberController::class, 'update']);
     Route::delete('/projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy']);
 
-    // Board Routes (F17)
+    // Board & Column Management (F17, F19)
     Route::post('/projects/{project}/boards', [BoardController::class, 'store']);
     Route::patch('/projects/{project}/boards/reorder', [BoardController::class, 'reorder']);
     Route::delete('/projects/{project}/boards/{board}', [BoardController::class, 'destroy']);
 
-    // Task CRUD Routes (F13)
+    Route::post('/boards/{board}/columns', [\App\Http\Controllers\BoardColumnController::class, 'store']);
+    Route::patch('/columns/{column}', [\App\Http\Controllers\BoardColumnController::class, 'update']);
+    Route::delete('/columns/{column}', [\App\Http\Controllers\BoardColumnController::class, 'destroy']);
+    Route::patch('/boards/{board}/columns/reorder', [\App\Http\Controllers\BoardColumnController::class, 'reorder']);
+
+    // Task CRUD & Operations (F13)
     Route::post('/projects/{project}/boards/{board}/tasks', [TaskController::class, 'store']);
     Route::patch('/tasks/{task}', [TaskController::class, 'update']);
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
+    Route::patch('/boards/{board}/tasks/reorder', [\App\Http\Controllers\TaskController::class, 'reorder']);
+    Route::patch('/tasks/{id}/status', [\App\Http\Controllers\TaskController::class, 'updateStatus']);
 
-    // Sprint 11: Real-time & Collaboration
-    Route::post('/tasks/{task}/attachments', [AttachmentController::class, 'store']);
-    Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy']);
-
+    // Checklist Management
     Route::post('/tasks/{task}/checklists', [ChecklistController::class, 'store']);
     Route::post('/checklists/{checklist}/items', [ChecklistItemController::class, 'store']);
     Route::patch('/checklist-items/{item}', [ChecklistItemController::class, 'update']);
     Route::delete('/checklist-items/{item}', [ChecklistItemController::class, 'destroy']);
 
+    // Attachments & Comments
+    Route::post('/tasks/{task}/attachments', [AttachmentController::class, 'store']);
+    Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy']);
+    Route::get('/tasks/{task}/comments', [CommentController::class, 'index']);
+    Route::post('/tasks/{task}/comments', [CommentController::class, 'store']);
+
+    // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-
-    // Board Column Routes (F19)
-    Route::post('/boards/{board}/columns', [\App\Http\Controllers\BoardColumnController::class, 'store']);
-    Route::patch('/columns/{column}', [\App\Http\Controllers\BoardColumnController::class, 'update']);
-    Route::delete('/columns/{column}', [\App\Http\Controllers\BoardColumnController::class, 'destroy']);
-    Route::patch('/boards/{board}/columns/reorder', [\App\Http\Controllers\BoardColumnController::class, 'reorder']);
-    Route::patch('/boards/{board}/tasks/reorder', [\App\Http\Controllers\TaskController::class, 'reorder']);
-
-    // Update Task Status via Inertia Request (Kanban Board Dnd)
-    Route::patch('/tasks/{id}/status', [\App\Http\Controllers\TaskController::class, 'updateStatus']);
 
 });

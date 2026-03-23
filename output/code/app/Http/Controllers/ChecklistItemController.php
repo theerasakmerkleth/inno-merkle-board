@@ -10,7 +10,6 @@ class ChecklistItemController extends Controller
 {
     public function store(Request $request, Checklist $checklist)
     {
-        // Add basic auth check
         if (! $checklist->task->project->users->contains(auth()->id()) && ! auth()->user()->hasRole('Admin')) {
             abort(403);
         }
@@ -19,14 +18,15 @@ class ChecklistItemController extends Controller
             'content' => 'required|string|max:255',
         ]);
 
-        $position = $checklist->items()->max('position') + 1;
+        $position = ($checklist->items()->max('position') ?? -1) + 1;
 
-        $item = $checklist->items()->create([
+        $checklist->items()->create([
             'content' => $request->content,
             'position' => $position,
+            'is_completed' => false,
         ]);
 
-        return response()->json($item, 201);
+        return redirect()->back()->with('success', 'Checklist item added.');
     }
 
     public function update(Request $request, ChecklistItem $item)
@@ -41,7 +41,7 @@ class ChecklistItemController extends Controller
 
         $item->update(['is_completed' => $request->is_completed]);
 
-        return response()->json($item);
+        return redirect()->back();
     }
 
     public function destroy(ChecklistItem $item)
@@ -52,6 +52,6 @@ class ChecklistItemController extends Controller
 
         $item->delete();
 
-        return response()->noContent();
+        return redirect()->back()->with('success', 'Checklist item deleted.');
     }
 }

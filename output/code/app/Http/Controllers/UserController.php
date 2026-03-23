@@ -29,6 +29,26 @@ class UserController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'role' => 'required|string|exists:roles,name',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt('password'), // Default password for MVP
+            'is_active' => true,
+        ]);
+
+        $user->assignRole($validated['role']);
+
+        return redirect()->back()->with('success', 'User invited successfully.');
+    }
+
     public function updateRole(Request $request, User $user)
     {
         $request->validate([

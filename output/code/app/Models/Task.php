@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['project_id', 'board_id', 'board_column_id', 'project_task_number', 'title', 'description', 'start_date', 'due_date', 'status', 'priority', 'assignee_id', 'reporter_id', 'story_points', 'labels', 'is_ai_assigned', 'requires_human_review'])]
 class Task extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['project_id', 'board_id', 'board_column_id', 'project_task_number', 'title', 'description', 'start_date', 'due_date', 'status', 'priority', 'assignee_id', 'reporter_id', 'story_points', 'labels', 'is_ai_assigned', 'requires_human_review'];
 
     protected $casts = [
         'start_date' => 'date',

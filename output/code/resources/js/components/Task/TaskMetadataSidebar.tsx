@@ -76,6 +76,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                 color: 'hsl(var(--destructive))',
             },
         }),
+        menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
     };
 
     return (
@@ -147,6 +148,8 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                             isDisabled={!canEdit}
                             placeholder="Add labels..."
                             className="text-xs"
+                            menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                            menuPosition="fixed"
                         />
                     </div>
                 </div>

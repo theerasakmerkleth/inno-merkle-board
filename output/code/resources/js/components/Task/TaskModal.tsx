@@ -194,13 +194,16 @@ const TaskModal = ({
                             />
 
                             {/* ATTACHMENTS PREVIEW */}
-                            <div {...getRootProps()} className="space-y-1.5" onClick={(e) => e.stopPropagation()}>
-                                <input {...getInputProps()} />
+                            <div className="space-y-1.5">
                                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
                                     <span className="material-icons text-[16px] text-muted-foreground">attach_file</span>
                                     Attachments
                                 </h3>
-                                <div className={`border-2 border-dashed border-border rounded-lg bg-muted/10 p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer ${isDragActive ? 'bg-primary/5 border-primary' : 'hover:bg-muted/20 hover:border-primary/50'}`}>
+                                <div 
+                                    {...getRootProps()} 
+                                    className={`border-2 border-dashed border-border rounded-lg bg-muted/10 p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer ${isDragActive ? 'bg-primary/5 border-primary' : 'hover:bg-muted/20 hover:border-primary/50'}`}
+                                >
+                                    <input {...getInputProps()} />
                                     <span className="material-icons text-[24px] text-muted-foreground mb-2">cloud_upload</span>
                                     <span className="text-sm text-muted-foreground">Drag & drop files or click to browse</span>
                                 </div>

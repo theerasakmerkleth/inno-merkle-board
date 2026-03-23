@@ -99,6 +99,9 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
                 <nav className="space-y-1 mt-3">
                     {available_projects.map(p => {
                         const isProjectActive = url.includes(`/projects/${p.key}`);
+                        const userRole = (auth?.user as any)?.role;
+                        const canManage = userRole === 'Admin' || userRole === 'Project Manager';
+                        
                         return (
                             <Link 
                                 key={p.id} 
@@ -112,7 +115,8 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
                                 <span className={`font-mono text-[10px] ${isProjectActive ? 'text-primary/70' : 'text-muted-foreground/70 group-hover:text-foreground/70'}`}>
                                     [{p.key}]
                                 </span>
-                                <span className="truncate">{p.name}</span>
+                                <span className="truncate flex-1">{p.name}</span>
+                                {!canManage && <span className="material-icons text-[12px] opacity-40 group-hover:opacity-70">lock</span>}
                             </Link>
                         );
                     })}
