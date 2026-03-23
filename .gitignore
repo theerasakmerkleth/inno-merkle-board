@@ -30,6 +30,7 @@ output/code/.env.*
 output/code/storage/*.key
 output/code/storage/app/public/*
 output/code/storage/framework/cache/data/*
+output/code/storage/framework/cache/laravel-excel/*
 output/code/storage/framework/sessions/*
 output/code/storage/framework/views/*
 output/code/storage/logs/*.log
@@ -40,12 +41,17 @@ output/code/public/storage
 output/code/.phpunit.result.cache
 output/code/.phpunit.cache/
 output/code/database/database.sqlite
+output/code/bootstrap/cache/*.php
+output/code/vite.log
 
 # Terraform specific (output/infra)
 output/infra/.terraform/
 output/infra/*.tfstate
 output/infra/*.tfstate.*
 output/infra/.terraform.lock.hcl
+output/infra/*.tfvars
+output/infra/*.tfvars.json
+output/infra/*.tfplan
 
 # Logs
 *.log
@@ -56,6 +62,9 @@ yarn-error.log*
 # Temporary files & Build artifacts
 rewrite_tailwind.js
 refactor_kanban.js
+cleanup_kanban.js
+remove_task_modal.js
+update_script.js
 .phpunit.result.cache
 dist/
 build/
