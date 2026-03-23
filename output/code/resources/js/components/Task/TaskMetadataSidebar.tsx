@@ -35,13 +35,14 @@ const labelOptions = [
 const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit, errors }: Props) => {
     
     const customStyles = {
-        control: (base: any) => ({
+        control: (base: any, state: any) => ({
             ...base,
             backgroundColor: 'hsl(var(--background))',
-            borderColor: 'hsl(var(--border))',
+            borderColor: state.isFocused ? 'hsl(var(--ring))' : 'hsl(var(--border))',
             fontSize: '0.75rem',
             minHeight: '32px',
             borderRadius: '0.125rem',
+            boxShadow: 'none',
             '&:hover': {
                 borderColor: 'hsl(var(--ring))',
             },
@@ -51,30 +52,66 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
             backgroundColor: 'hsl(var(--background))',
             border: '1px solid hsl(var(--border))',
             fontSize: '0.75rem',
+            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+            zIndex: 9999,
+        }),
+        menuList: (base: any) => ({
+            ...base,
+            padding: '4px',
         }),
         option: (base: any, state: any) => ({
             ...base,
-            backgroundColor: state.isFocused ? 'hsl(var(--accent))' : 'transparent',
-            color: state.isFocused ? 'hsl(var(--accent-foreground))' : 'inherit',
+            backgroundColor: state.isSelected 
+                ? 'hsl(var(--primary))' 
+                : state.isFocused 
+                    ? 'hsl(var(--accent))' 
+                    : 'transparent',
+            color: state.isSelected 
+                ? 'hsl(var(--primary-foreground))' 
+                : state.isFocused 
+                    ? 'hsl(var(--accent-foreground))' 
+                    : 'hsl(var(--foreground))',
+            borderRadius: '0.125rem',
+            cursor: 'pointer',
+            padding: '6px 10px',
+            fontSize: '0.75rem',
+            '&:active': {
+                backgroundColor: 'hsl(var(--accent))',
+            },
         }),
         multiValue: (base: any) => ({
             ...base,
             backgroundColor: 'hsl(var(--accent))',
             borderRadius: '9999px',
+            paddingLeft: '4px',
         }),
         multiValueLabel: (base: any) => ({
             ...base,
             color: 'hsl(var(--accent-foreground))',
             fontSize: '10px',
+            fontWeight: '600',
             padding: '1px 6px',
         }),
         multiValueRemove: (base: any) => ({
             ...base,
             color: 'hsl(var(--accent-foreground))',
+            cursor: 'pointer',
             '&:hover': {
                 backgroundColor: 'transparent',
                 color: 'hsl(var(--destructive))',
             },
+        }),
+        placeholder: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--muted-foreground))',
+        }),
+        input: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--foreground))',
+        }),
+        singleValue: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--foreground))',
         }),
         menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
     };
@@ -137,9 +174,10 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                 </div>
 
                 <div className="grid grid-cols-3 items-start gap-4">
-                    <label className="text-xs text-muted-foreground col-span-1 pt-2">Labels</label>
+                    <label htmlFor="task-labels" className="text-xs text-muted-foreground col-span-1 pt-2">Labels</label>
                     <div className="col-span-2">
                         <Select
+                            inputId="task-labels"
                             isMulti
                             styles={customStyles}
                             options={labelOptions}
@@ -150,6 +188,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                             className="text-xs"
                             menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
                             menuPosition="fixed"
+                            classNamePrefix="react-select"
                         />
                     </div>
                 </div>
