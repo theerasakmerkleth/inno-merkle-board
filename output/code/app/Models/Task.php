@@ -69,6 +69,11 @@ class Task extends Model
         return $this->belongsTo(User::class, 'assignee_id');
     }
 
+    public function reporter()
+    {
+        return $this->belongsTo(User::class, 'reporter_id');
+    }
+
     public function aiAgentSubmissions()
     {
         return $this->hasMany(AiAgentSubmission::class);
