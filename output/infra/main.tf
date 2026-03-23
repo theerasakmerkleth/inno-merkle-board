@@ -116,6 +116,10 @@ resource "google_cloud_run_v2_service" "taskflow_app" {
         value = "production"
       }
       env {
+        name  = "APP_NAME"
+        value = "MerkleBoard"
+      }
+      env {
         name  = "DB_CONNECTION"
         value = "pgsql"
       }
