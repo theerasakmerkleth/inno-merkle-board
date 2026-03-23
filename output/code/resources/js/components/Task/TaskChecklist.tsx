@@ -30,6 +30,7 @@ const TaskChecklist = ({ taskId, checklists, canEdit }: Props) => {
             content: newChecklistItem
         }, {
             preserveScroll: true,
+            preserveState: true,
             onSuccess: () => setNewChecklistItem('')
         });
     };
@@ -37,19 +38,19 @@ const TaskChecklist = ({ taskId, checklists, canEdit }: Props) => {
     const handleToggleChecklistItem = (itemId: number, isCompleted: boolean) => {
         router.patch(`/checklist-items/${itemId}`, {
             is_completed: !isCompleted
-        }, { preserveScroll: true });
+        }, { preserveScroll: true, preserveState: true });
     };
 
     const handleDeleteChecklistItem = (itemId: number) => {
         if (confirm("Remove this sub-task?")) {
-            router.delete(`/checklist-items/${itemId}`, { preserveScroll: true });
+            router.delete(`/checklist-items/${itemId}`, { preserveScroll: true, preserveState: true });
         }
     };
 
     const handleCreateChecklist = () => {
         router.post(`/tasks/${taskId}/checklists`, {
             title: 'Sub-tasks'
-        }, { preserveScroll: true });
+        }, { preserveScroll: true, preserveState: true });
     };
 
     return (

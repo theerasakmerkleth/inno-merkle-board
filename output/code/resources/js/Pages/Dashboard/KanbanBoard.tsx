@@ -76,12 +76,6 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
   const [boardColumns, setBoardColumns] = useState<ColumnProps[]>(columns);
   const [projectBoards, setProjectBoards] = useState<Board[]>(boards);
 
-  // Sync columns when props change
-  useEffect(() => {
-    setBoardColumns(columns);
-    setProjectBoards(boards);
-  }, [columns, boards]);
-
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -89,6 +83,22 @@ const KanbanBoard = ({ current_project, available_projects, boards, active_board
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [initialColIdForCreate, setInitialColIdForCreate] = useState<number | null>(null);
+
+  // Sync columns when props change
+  useEffect(() => {
+    setBoardColumns(columns);
+    setProjectBoards(boards);
+    
+    if (editingTask && isModalOpen) {
+       for (const col of columns) {
+           const updatedTask = col.tasks.find(t => t.id === editingTask.id);
+           if (updatedTask && JSON.stringify(updatedTask) !== JSON.stringify(editingTask)) {
+               setEditingTask(updatedTask);
+               break;
+           }
+       }
+    }
+  }, [columns, boards, isModalOpen, editingTask]);
 
   const [isCreatingBoard, setIsCreatingBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
