@@ -43,72 +43,70 @@ class TasksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
         return [
             'Task Key',
             'Title',
-            'Description (Plain Text)',
             'Status',
             'Priority',
             'Assignee',
-            'Reporter',
-            'Story Points',
             'Start Date',
             'Due Date',
+            'Duration (Days)',
+            'Conflict Status',
+            'Story Points',
             'Labels',
-            'Checklist Progress'
+            'Description (Plain Text)'
         ];
     }
 
     public function map($task): array
     {
+        // Parse dates
+        $start = $task->start_date ? new \DateTime($task->start_date) : null;
+        $due = $task->due_date ? new \DateTime($task->due_date) : null;
+        
+        $duration = 'N/A';
+        if ($start && $due) {
+            $duration = $start->diff($due)->days + 1;
+        }
+
+        // Conflict check logic (simple version: due < start)
+        $hasConflict = ($start && $due && $due < $start) ? 'YES (Invalid Range)' : 'NO';
+
         // Strip HTML from description
         $plainDescription = strip_tags($task->description ?? '');
-        // Truncate to avoid massive Excel cells, e.g., max 32767 chars in Excel, but keep it readable
         $plainDescription = strlen($plainDescription) > 500 ? substr($plainDescription, 0, 497) . '...' : $plainDescription;
-
-        // Calculate Checklist Progress
-        $checklistProgress = 'N/A';
-        if ($task->checklists && $task->checklists->isNotEmpty()) {
-            $firstChecklist = $task->checklists->first();
-            $total = $firstChecklist->items->count();
-            if ($total > 0) {
-                $completed = $firstChecklist->items->where('is_completed', true)->count();
-                $checklistProgress = "{$completed}/{$total}";
-            } else {
-                $checklistProgress = '0/0';
-            }
-        }
 
         return [
             $task->formatted_id,
             $task->title,
-            $plainDescription,
             $task->column ? $task->column->title : $task->status,
             ucfirst($task->priority),
             $task->assignee ? $task->assignee->name : 'Unassigned',
-            $task->reporter ? $task->reporter->name : 'System',
-            $task->story_points ?? '',
-            $task->start_date ? Date::dateTimeToExcel($task->start_date) : '',
-            $task->due_date ? Date::dateTimeToExcel($task->due_date) : '',
+            $task->start_date ? Date::dateTimeToExcel($start) : '',
+            $task->due_date ? Date::dateTimeToExcel($due) : '',
+            $duration,
+            $hasConflict,
+            $task->story_points ?? '0',
             $task->labels ? implode(', ', $task->labels) : '',
-            $checklistProgress
+            $plainDescription
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Format dates correctly in Excel
-        $sheet->getStyle('I2:J' . $sheet->getHighestRow())
+        // Format dates correctly in Excel (Columns F and G)
+        $sheet->getStyle('F2:G' . $sheet->getHighestRow())
               ->getNumberFormat()
               ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_DATE_YYYYMMDD);
 
         return [
-            // Style the first row as bold text.
+            // Style the first row: Zen Grey Header
             1    => [
                 'font' => [
                     'bold' => true,
-                    'color' => ['argb' => 'FFFFFFFF'],
+                    'color' => ['argb' => 'FF18181B'], // Zinc 900
                 ],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['argb' => 'FFDD3039'] // Merkle Red
+                    'startColor' => ['argb' => 'FFF4F4F5'] // Zinc 100
                 ]
             ],
         ];

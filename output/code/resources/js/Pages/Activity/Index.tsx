@@ -101,17 +101,17 @@ export default function ActivityIndex({ logs, filters, available_projects }: Pag
         <AppLayout breadcrumbs={<span>Activity Log</span>}>
             <Head title="Activity Log | MerkleBoard" />
 
-            <div className="flex-1 overflow-y-auto p-8 bg-background">
+            <div className="flex-1 overflow-y-auto p-8 bg-[#F8F9FA]">
                 <div className="max-w-5xl mx-auto">
                     <div className="flex justify-between items-end mb-8">
                         <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Activity Log</h1>
-                            <p className="text-sm text-muted-foreground mt-1">Tracking all relevant updates across your workspace.</p>
+                            <h1 className="text-3xl font-bold tracking-tight text-foreground">Activity Log</h1>
+                            <p className="text-sm text-muted-foreground mt-1 font-medium">Tracking all relevant updates across your workspace.</p>
                         </div>
                     </div>
 
-                    {/* Filter Bar */}
-                    <div className="bg-card border border-border rounded-lg p-4 mb-8 flex flex-wrap items-center gap-4 shadow-sm">
+                    {/* Filter Bar with Glassmorphism */}
+                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-lg p-4 mb-8 flex flex-wrap items-center gap-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] sticky top-0 z-10">
                         <div className="flex-1 min-w-[200px] relative">
                             <span className="material-icons absolute left-3 top-2.5 text-muted-foreground/50 text-[18px]">search</span>
                             <input 

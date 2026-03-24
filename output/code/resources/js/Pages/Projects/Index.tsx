@@ -83,18 +83,18 @@ export default function ProjectsIndex({ projects }: PageProps) {
   return (
     <AppLayout breadcrumbs={<span>Workspace Hub</span>}>
       
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-background flex flex-col">
-          <div className="flex justify-between items-center mb-8">
+      <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-background flex flex-col">
+          <div className="flex justify-between items-end mb-10">
               <div>
-                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">Projects</h1>
-                  <p className="text-sm text-muted-foreground mt-1">Manage and access all your workspace initiatives.</p>
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground">Workspace Hub</h1>
+                  <p className="text-sm text-muted-foreground mt-1 font-medium">Your centralized project directory and management center.</p>
               </div>
               {canCreate && (
                   <button 
                       onClick={() => setIsCreating(true)}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-sm text-sm transition-colors shadow-sm flex items-center gap-1.5"
+                      className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2"
                   >
-                      <span className="material-icons text-[16px]">add</span>
+                      <span className="material-icons text-[18px]">add</span>
                       New Project
                   </button>
               )}
@@ -222,43 +222,46 @@ const SortableProjectCard = ({ project, canEdit }: { project: Project; canEdit: 
         <div 
             ref={setNodeRef} 
             style={style}
-            className="bg-card border border-border rounded-lg p-6 flex flex-col shadow-sm relative group cursor-default"
+            className="bg-card border border-border/60 rounded-lg p-6 flex flex-col shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05),0_4px_6px_-4px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 relative group cursor-default"
         >
-            <div className="flex justify-between items-start mb-4 pr-6">
-                <div className="flex items-center gap-2">
+            <div className="flex justify-between items-start mb-6">
+                <div className="flex items-center gap-3">
                     {canEdit && (
-                        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1 -ml-2">
-                            <span className="material-icons text-[16px]">drag_indicator</span>
+                        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-primary transition-colors">
+                            <span className="material-icons text-[18px]">drag_indicator</span>
                         </div>
                     )}
-                    <span className="font-mono text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-sm border border-primary/20">
+                    <span className="font-mono text-[10px] font-bold text-primary bg-primary/5 px-2 py-1 rounded border border-primary/10 tracking-widest uppercase">
                         {project.key}
                     </span>
                 </div>
-                <span className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded-sm border ${project.status === 'active' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border'}`}>
-                    {project.status}
-                </span>
+                <div className={`h-2 w-2 rounded-full ${project.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-zinc-300'}`} title={project.status}></div>
             </div>
 
             {canEdit && (
                 <Link 
                     href={`/projects/${project.key}/settings`} 
-                    className="absolute top-4 right-4 text-muted-foreground hover:text-foreground hover:bg-muted p-1.5 rounded-full transition-colors flex items-center justify-center"
+                    className="absolute top-6 right-6 text-muted-foreground/40 hover:text-foreground hover:bg-zinc-50 p-1.5 rounded-md transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
                     title="Project Settings"
                 >
-                    <span className="material-icons text-[16px]">settings</span>
+                    <span className="material-icons text-[18px]">settings</span>
                 </Link>
             )}
             
-            <Link href={`/projects/${project.key}/boards`} className="hover:text-primary transition-colors block">
-                <h2 className="text-lg font-semibold text-foreground leading-tight mb-2">
+            <Link href={`/projects/${project.key}/boards`} className="block group/title mb-8">
+                <h2 className="text-xl font-bold text-foreground leading-tight tracking-tight group-hover/title:text-primary transition-colors">
                     {project.name}
                 </h2>
             </Link>
             
-            <div className="mt-auto pt-4 flex items-center gap-2 text-sm text-muted-foreground border-t border-border">
-                <span className="material-icons text-[16px]">group</span>
-                {project.users_count} {project.users_count === 1 ? 'member' : 'members'}
+            <div className="mt-auto pt-5 flex items-center justify-between text-[10px] text-muted-foreground/60 border-t border-border/50 font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-1.5">
+                    <span className="material-icons text-[14px]">group</span>
+                    {project.users_count} {project.users_count === 1 ? 'member' : 'members'}
+                </div>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-primary">
+                    Enter <span className="material-icons text-[12px]">arrow_forward</span>
+                </span>
             </div>
         </div>
     );

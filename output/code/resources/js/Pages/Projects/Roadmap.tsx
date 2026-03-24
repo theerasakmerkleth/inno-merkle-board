@@ -3,6 +3,8 @@ import { Link, Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { toPng, toBlob } from 'html-to-image';
+import jsPDF from 'jspdf';
 
 interface User {
     id: number;
@@ -162,6 +164,60 @@ export default function Roadmap({ project, tasks }: PageProps) {
         }
     };
 
+    const exportVisualRoadmap = async (format: 'png' | 'pdf') => {
+        const element = document.getElementById('gantt-chart-container');
+        if (!element) {
+            toast.error('Gantt chart area not found');
+            return;
+        }
+        const toastId = toast.loading(`Preparing ${format.toUpperCase()} export...`);
+        
+        try {
+            const filter = (node: HTMLElement) => {
+                const exclusionClasses = ['material-icons']; // Optional: exclude specific elements if they cause issues
+                return !exclusionClasses.some(cls => node.classList?.contains(cls));
+            };
+
+            const options = {
+                quality: 0.95,
+                pixelRatio: 2,
+                backgroundColor: '#FFFFFF',
+                width: element.scrollWidth,
+                height: element.scrollHeight,
+                style: {
+                    transform: 'none',
+                    margin: '0',
+                }
+            };
+
+            if (format === 'png') {
+                const dataUrl = await toPng(element, options);
+                const link = document.createElement('a');
+                link.download = `${project.key}_Roadmap_Visual.png`;
+                link.href = dataUrl;
+                link.click();
+            } else {
+                const blob = await toBlob(element, options);
+                if (!blob) throw new Error('Failed to generate image blob');
+                
+                const dataUrl = await toPng(element, options);
+                const pdf = new jsPDF({
+                    orientation: element.scrollWidth > element.scrollHeight ? 'l' : 'p',
+                    unit: 'px',
+                    format: [element.scrollWidth, element.scrollHeight]
+                });
+                
+                pdf.addImage(dataUrl, 'PNG', 0, 0, element.scrollWidth, element.scrollHeight);
+                pdf.save(`${project.key}_Roadmap_Full.pdf`);
+            }
+
+            toast.success('Roadmap exported successfully!', { id: toastId });
+        } catch (error) {
+            console.error('Export Error:', error);
+            toast.error('Failed to export visual roadmap. Use Excel export instead.', { id: toastId });
+        }
+    };
+
     const tasksWithoutDates = tasks.filter(t => !t.start_date || !t.due_date);
 
     const breadcrumbs = (
@@ -203,10 +259,20 @@ export default function Roadmap({ project, tasks }: PageProps) {
                                             <span className="material-icons text-[18px]">more_horiz</span>
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-md">
+                                    <DropdownMenuContent align="end" className="w-64 bg-background border border-border shadow-md">
                                         <DropdownMenuItem onClick={() => handleExport()} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
-                                            <span className="material-icons text-[14px] mr-2 text-muted-foreground">download</span>
-                                            Export Roadmap (All Tasks)
+                                            <span className="material-icons text-[14px] mr-2 text-muted-foreground">table_chart</span>
+                                            Export to Excel (Task List)
+                                        </DropdownMenuItem>
+                                        <div className="h-px bg-border my-1"></div>
+                                        <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Visual Export</div>
+                                        <DropdownMenuItem onClick={() => exportVisualRoadmap('png')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                                            <span className="material-icons text-[14px] mr-2 text-muted-foreground">image</span>
+                                            Export as Image (PNG)
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => exportVisualRoadmap('pdf')} className="text-xs cursor-pointer hover:bg-accent text-foreground focus:text-foreground">
+                                            <span className="material-icons text-[14px] mr-2 text-muted-foreground">picture_as_pdf</span>
+                                            Export as PDF Document
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -247,7 +313,7 @@ export default function Roadmap({ project, tasks }: PageProps) {
                 <div ref={scrollContainerRef} className="flex-1 overflow-auto relative bg-background">
                     
                     {/* Unified Timeline Wrapper */}
-                    <div className="flex min-h-full" style={{ width: `calc(256px + ${days.length * cellWidth}px)` }}>
+                    <div id="gantt-chart-container" className="flex min-h-full" style={{ width: `calc(256px + ${days.length * cellWidth}px)` }}>
                         
                         {/* 1. STICKY TASK SIDEBAR */}
                         <div className="w-[256px] flex-shrink-0 bg-background border-r border-border/50 sticky left-0 z-20 shadow-[2px_0_10px_-4px_rgba(0,0,0,0.15)]">

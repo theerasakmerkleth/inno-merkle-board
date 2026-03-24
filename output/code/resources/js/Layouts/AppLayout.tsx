@@ -72,13 +72,13 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
                     <Link 
                         key={link.name}
                         href={link.href} 
-                        className={`flex items-center gap-3 px-3 py-2 text-sm rounded-sm transition-colors group ${
+                        className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all duration-200 group ${
                             link.active 
-                            ? 'bg-primary/10 text-primary font-medium' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                            ? 'bg-primary text-white shadow-sm font-semibold' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                         }`}
                     >
-                        <span className={`material-icons text-[16px] transition-colors ${link.active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                        <span className={`material-icons text-[18px] transition-colors ${link.active ? 'text-white' : 'text-muted-foreground group-hover:text-primary'}`}>
                             {link.icon}
                         </span>
                         {link.name}

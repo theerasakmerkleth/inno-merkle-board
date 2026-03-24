@@ -144,18 +144,18 @@ const TaskModal = ({
         <div className="fixed inset-0 z-[100] flex justify-end">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
             
-            <div className="relative bg-card border-l border-border shadow-2xl w-full sm:w-[800px] md:w-[900px] h-full flex flex-col overflow-hidden animate-in slide-in-from-right">
-                <header className="px-6 py-4 border-b border-border flex justify-between items-center bg-background">
-                    <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 flex-1">
+            <div className="relative bg-white border-l border-border shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] w-full sm:w-[800px] md:w-[900px] h-full flex flex-col overflow-hidden animate-in slide-in-from-right">
+                <header className="px-8 py-5 border-b border-border flex justify-between items-center bg-white">
+                    <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-3 flex-1">
                         {isEditMode ? (
                             <>
-                                <span className="text-muted-foreground font-mono text-sm">{task.formatted_id}</span>
+                                <span className="text-primary bg-primary/5 px-2 py-0.5 rounded text-xs font-mono">{task.formatted_id}</span>
                                 <input
                                     type="text"
                                     value={data.title}
                                     onChange={e => setData('title', e.target.value)}
                                     disabled={!canEdit}
-                                    className="bg-transparent border-none focus:ring-0 text-xl font-semibold text-foreground w-full p-0"
+                                    className="bg-transparent border-none focus:ring-0 text-xl font-bold text-foreground w-full p-0 tracking-tight"
                                     placeholder="Task Title"
                                 />
                             </>
