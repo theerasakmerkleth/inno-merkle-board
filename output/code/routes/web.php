@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     // Core Navigation (Dashboard & Analytics)
     Route::get('/', [DashboardController::class, 'myTasks'])->name('home');
     Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
+    Route::get('/activity', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity.index');
 
     // Project Hub & Management (F15)
     Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
@@ -58,6 +59,7 @@ Route::middleware('auth')->group(function () {
     // Board & Column Management (F17, F19)
     Route::post('/projects/{project}/boards', [BoardController::class, 'store']);
     Route::patch('/projects/{project}/boards/reorder', [BoardController::class, 'reorder']);
+    Route::get('/projects/{project_key}/boards/{board}/activity', [BoardController::class, 'activity']);
     Route::delete('/projects/{project}/boards/{board}', [BoardController::class, 'destroy']);
 
     Route::post('/boards/{board}/columns', [\App\Http\Controllers\BoardColumnController::class, 'store']);

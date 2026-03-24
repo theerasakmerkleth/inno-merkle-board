@@ -43,6 +43,7 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
   const navLinks = [
     { name: 'My Tasks', href: '/', icon: 'inbox', active: url === '/' },
     { name: 'Dashboard', href: '/analytics', icon: 'bar_chart', active: url.startsWith('/analytics') },
+    { name: 'Activity Log', href: '/activity', icon: 'history', active: url.startsWith('/activity') },
     { name: 'User Management', href: '/users', icon: 'manage_accounts', active: url.startsWith('/users') },
   ];
 

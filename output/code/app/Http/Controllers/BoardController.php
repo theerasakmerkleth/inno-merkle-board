@@ -98,7 +98,7 @@ class BoardController extends Controller
         return Inertia::render('Dashboard/KanbanBoard', [
             'current_project' => $project,
             'available_projects' => $availableProjects,
-            'boards' => $boards,
+            'project_boards' => $boards,
             'active_board' => $activeBoard,
             'columns' => $columns,
             'project_members' => $allAssignees,
@@ -157,5 +157,22 @@ class BoardController extends Controller
         $board->delete();
 
         return redirect()->route('projects.board', ['project_key' => $project->key])->with('success', 'Board deleted successfully.');
+    }
+
+    public function activity(Project $project, Board $board)
+    {
+        $user = auth()->user();
+        if (! $user->hasRole('Admin') && ! $project->users->contains($user->id)) {
+            abort(403);
+        }
+
+        $logs = \App\Models\ActivityLog::whereHas('task', function($q) use ($board) {
+                $q->where('board_id', $board->id);
+            })
+            ->with(['user', 'task'])
+            ->latest()
+            ->paginate(30);
+
+        return response()->json($logs);
     }
 }
