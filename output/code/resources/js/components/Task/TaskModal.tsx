@@ -144,12 +144,12 @@ const TaskModal = ({
         <div className="fixed inset-0 z-[100] flex justify-end">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
             
-            <div className="relative bg-white border-l border-border shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] w-full sm:w-[800px] md:w-[900px] h-full flex flex-col overflow-hidden animate-in slide-in-from-right">
-                <header className="px-8 py-5 border-b border-border flex justify-between items-center bg-white">
+            <div className="relative bg-background border-l border-border shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] w-full sm:w-[800px] md:w-[900px] h-full flex flex-col overflow-hidden animate-in slide-in-from-right">
+                <header className="px-8 py-5 border-b border-border flex justify-between items-center bg-background">
                     <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-3 flex-1">
                         {isEditMode ? (
                             <>
-                                <span className="text-primary bg-primary/5 px-2 py-0.5 rounded text-xs font-mono">{task.formatted_id}</span>
+                                <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-xs font-mono">{task.formatted_id}</span>
                                 <input
                                     type="text"
                                     value={data.title}
@@ -166,14 +166,14 @@ const TaskModal = ({
                             <button 
                                 type="button"
                                 onClick={() => setIsMoveModalOpen(true)}
-                                className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-sm hover:bg-muted flex items-center gap-1 text-xs font-medium"
+                                className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-muted flex items-center gap-1 text-xs font-medium"
                                 title="Move Task"
                             >
                                 <span className="material-icons text-[14px]">shortcut</span>
                                 <span className="hidden sm:inline">Move</span>
                             </button>
                         )}
-                        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-sm hover:bg-muted" title="Close">
+                        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-muted" title="Close">
                             <span className="material-icons">close</span>
                         </button>
                     </div>

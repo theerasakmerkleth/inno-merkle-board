@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Head, router, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import TaskModal from '@/Components/Task/TaskModal';
+import { TaskListView } from '@/components/Task/TaskListView';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
@@ -63,6 +64,7 @@ interface PageProps {
 const KanbanBoard = ({ current_project, active_board, project_boards = [], columns = [], project_members = [], auth, project_role = 'Viewer', user_permissions = {} as any, available_projects = [] }: PageProps) => {
   const [boardColumns, setBoardColumns] = useState<ColumnProps[]>(columns || []);
   const [projectBoards, setProjectBoards] = useState<Board[]>(project_boards || []);
+  const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -309,7 +311,19 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
                   </DropdownMenu>
 
                   <div className="hidden sm:flex bg-zinc-100/80 rounded-md p-1 gap-1 border border-zinc-200/50">
-                      <div className="px-4 py-1.5 text-xs font-bold bg-white text-zinc-900 shadow-sm rounded-[4px] border border-zinc-200/50">Board</div>
+                      <button 
+                        onClick={() => setViewMode('board')}
+                        className={`px-4 py-1.5 text-xs font-bold transition-all rounded-[4px] border ${viewMode === 'board' ? 'bg-white text-zinc-900 shadow-sm border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900 border-transparent'}`}
+                      >
+                        Board
+                      </button>
+                      <button 
+                        onClick={() => setViewMode('list')}
+                        className={`px-4 py-1.5 text-xs font-bold transition-all rounded-[4px] border ${viewMode === 'list' ? 'bg-white text-zinc-900 shadow-sm border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900 border-transparent'}`}
+                      >
+                        List
+                      </button>
+                      <div className="w-px bg-zinc-200 mx-1 my-1" />
                       <Link href={`/projects/${current_project?.key}/roadmap`} className="px-4 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-900 transition-colors">Roadmap</Link>
                       <Link href={`/projects/${current_project?.key}/reports`} className="px-4 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-900 transition-colors">Reports</Link>
                   </div>
@@ -356,35 +370,42 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
           </div>
       </header>
       
-      <div className="flex-1 flex gap-8 overflow-x-auto overflow-y-hidden px-8 py-8 items-start bg-[#F9FAFB]">
-        <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} sensors={sensors}>
-          <SortableContext items={(filteredColumns || []).filter(col => col && col.id).map(col => `column-${col.id}`)} strategy={horizontalListSortingStrategy}>
-            {(filteredColumns || []).map((column) => column && (
-                <DroppableColumn key={column.id} column={column} user_permissions={user_permissions} canEdit={isStructureUnlocked} isConfigMode={isConfigMode} onRename={handleRenameColumn} onDelete={handleDeleteColumn} onCreateCard={openCreateModal}>
-                    <SortableContext items={(column.tasks || []).filter(t => t && t.id).map(t => `task-${t.id}`)} strategy={verticalListSortingStrategy}>
-                        {(column.tasks || []).map((task) => task && (
-                            <DraggableTask key={task.id} task={task} onClick={() => openEditModal(task)} canDrag={canMoveTasks} />
-                        ))}
-                    </SortableContext>
-                </DroppableColumn>
-            ))}
-          </SortableContext>
-        </DndContext>
-        {isStructureUnlocked && (
-            <div className="min-w-[300px] pt-2">
-                {isCreatingColumn ? (
-                    <div className="bg-white border border-primary/30 p-4 rounded-xl shadow-lg ring-4 ring-primary/5">
-                        <input type="text" value={newColumnTitle} onChange={e => setNewColumnTitle(e.target.value)} onKeyDown={handleCreateColumn} autoFocus onBlur={() => setIsCreatingColumn(false)} placeholder="Column title... (Enter)" className="w-full bg-transparent text-sm focus:outline-none text-zinc-900 font-bold" />
-                    </div>
-                ) : (
-                    <button onClick={() => setIsCreatingColumn(true)} className="w-full flex items-center justify-center gap-3 p-5 border border-dashed border-zinc-200 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-white hover:border-zinc-300 transition-all group">
-                        <span className="material-icons text-[20px]">add_circle_outline</span>
-                        <span className="text-sm font-bold uppercase tracking-wider">Add Column</span>
-                    </button>
-                )}
-            </div>
-        )}
-      </div>
+      {viewMode === 'board' ? (
+        <div className="flex-1 flex gap-8 overflow-x-auto overflow-y-hidden px-8 py-8 items-start bg-background">
+          <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} sensors={sensors}>
+            <SortableContext items={(filteredColumns || []).filter(col => col && col.id).map(col => `column-${col.id}`)} strategy={horizontalListSortingStrategy}>
+              {(filteredColumns || []).map((column) => column && (
+                  <DroppableColumn key={column.id} column={column} user_permissions={user_permissions} canEdit={isStructureUnlocked} isConfigMode={isConfigMode} onRename={handleRenameColumn} onDelete={handleDeleteColumn} onCreateCard={openCreateModal}>
+                      <SortableContext items={(column.tasks || []).filter(t => t && t.id).map(t => `task-${t.id}`)} strategy={verticalListSortingStrategy}>
+                          {(column.tasks || []).map((task) => task && (
+                              <DraggableTask key={task.id} task={task} onClick={() => openEditModal(task)} canDrag={canMoveTasks} />
+                          ))}
+                      </SortableContext>
+                  </DroppableColumn>
+              ))}
+            </SortableContext>
+          </DndContext>
+          {isStructureUnlocked && (
+              <div className="min-w-[300px] pt-2">
+                  {isCreatingColumn ? (
+                      <div className="bg-white border border-primary/30 p-4 rounded-xl shadow-lg ring-4 ring-primary/5">
+                          <input type="text" value={newColumnTitle} onChange={e => setNewColumnTitle(e.target.value)} onKeyDown={handleCreateColumn} autoFocus onBlur={() => setIsCreatingColumn(false)} placeholder="Column title... (Enter)" className="w-full bg-transparent text-sm focus:outline-none text-zinc-900 font-bold" />
+                      </div>
+                  ) : (
+                      <button onClick={() => setIsCreatingColumn(true)} className="w-full flex items-center justify-center gap-3 p-5 border border-dashed border-zinc-200 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-white hover:border-zinc-300 transition-all group">
+                          <span className="material-icons text-[20px]">add_circle_outline</span>
+                          <span className="text-sm font-bold uppercase tracking-wider">Add Column</span>
+                      </button>
+                  )}
+              </div>
+          )}
+        </div>
+      ) : (
+        <TaskListView 
+            columns={filteredColumns}
+            onTaskClick={openEditModal}
+        />
+      )}
 
       {isModalOpen && (
           <TaskModal 

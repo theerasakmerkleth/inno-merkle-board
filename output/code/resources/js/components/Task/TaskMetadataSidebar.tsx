@@ -37,25 +37,25 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
     const customStyles = {
         control: (base: any, state: any) => ({
             ...base,
-            backgroundColor: '#ffffff',
+            backgroundColor: 'hsl(var(--background))',
             borderColor: state.isFocused ? 'hsl(var(--ring))' : 'hsl(var(--border))',
             fontSize: '0.75rem',
             minHeight: '32px',
-            borderRadius: '0.125rem',
+            borderRadius: 'var(--radius)',
             boxShadow: 'none',
-            color: '#000000',
+            color: 'hsl(var(--foreground))',
             '&:hover': {
                 borderColor: 'hsl(var(--ring))',
             },
         }),
         menu: (base: any) => ({
             ...base,
-            backgroundColor: '#ffffff',
+            backgroundColor: 'hsl(var(--background))',
             border: '1px solid hsl(var(--border))',
             fontSize: '0.75rem',
             boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
             zIndex: 9999,
-            color: '#000000',
+            color: 'hsl(var(--foreground))',
         }),
         menuList: (base: any) => ({
             ...base,
@@ -70,8 +70,8 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                     : 'transparent',
             color: state.isSelected 
                 ? 'hsl(var(--primary-foreground))' 
-                : '#000000',
-            borderRadius: '0.125rem',
+                : 'hsl(var(--foreground))',
+            borderRadius: 'calc(var(--radius) - 2px)',
             cursor: 'pointer',
             padding: '6px 10px',
             fontSize: '0.75rem',
@@ -103,21 +103,21 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
         }),
         placeholder: (base: any) => ({
             ...base,
-            color: '#666666',
+            color: 'hsl(var(--muted-foreground))',
         }),
         input: (base: any) => ({
             ...base,
-            color: '#000000',
+            color: 'hsl(var(--foreground))',
         }),
         singleValue: (base: any) => ({
             ...base,
-            color: '#000000',
+            color: 'hsl(var(--foreground))',
         }),
         menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
     };
 
     return (
-        <div className="md:col-span-4 bg-muted/30 border-l border-border p-6 space-y-6 h-full overflow-y-auto relative">
+        <div className="md:col-span-4 bg-muted/10 border-l border-border p-6 space-y-6 h-full overflow-y-auto relative">
 
             <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Details</h4>
@@ -130,7 +130,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                         value={data.board_column_id}
                         onChange={e => setData('board_column_id', e.target.value)}
                         disabled={!canEdit}
-                        className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        className="col-span-2 w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
                     >
                         {columns.map(col => (
                             <option key={col.id} value={col.db_id}>{col.title}</option>
@@ -146,7 +146,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                         value={data.assignee_id}
                         onChange={e => setData('assignee_id', e.target.value)}
                         disabled={!canEdit}
-                        className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        className="col-span-2 w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
                     >
                         <option value="">Unassigned</option>
                         {project_members.map(member => (
@@ -163,7 +163,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                         value={data.priority}
                         onChange={e => setData('priority', e.target.value)}
                         disabled={!canEdit}
-                        className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        className="col-span-2 w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
                     >
                         <option value="lowest">Lowest</option>
                         <option value="low">Low</option>
@@ -208,7 +208,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                         value={data.story_points || ''}
                         onChange={e => setData('story_points', e.target.value)}
                         disabled={!canEdit}
-                        className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        className="col-span-2 w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
                     />
                 </div>
 
@@ -220,7 +220,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                         value={data.start_date || ''}
                         onChange={e => setData('start_date', e.target.value)}
                         disabled={!canEdit}
-                        className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        className="col-span-2 w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
                     />
                 </div>
 
@@ -232,7 +232,7 @@ const TaskMetadataSidebar = ({ data, setData, columns, project_members, canEdit,
                         value={data.due_date || ''}
                         onChange={e => setData('due_date', e.target.value)}
                         disabled={!canEdit}
-                        className="col-span-2 w-full bg-background border border-border rounded-sm px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-ring transition-colors disabled:opacity-50"
+                        className="col-span-2 w-full bg-background border border-border rounded-md px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
                     />
                 </div>
             </div>

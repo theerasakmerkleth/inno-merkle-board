@@ -101,7 +101,7 @@ export default function ActivityIndex({ logs, filters, available_projects }: Pag
         <AppLayout breadcrumbs={<span>Activity Log</span>}>
             <Head title="Activity Log | MerkleBoard" />
 
-            <div className="flex-1 overflow-y-auto p-8 bg-[#F8F9FA]">
+            <div className="flex-1 overflow-y-auto p-8 bg-background">
                 <div className="max-w-5xl mx-auto">
                     <div className="flex justify-between items-end mb-8">
                         <div>

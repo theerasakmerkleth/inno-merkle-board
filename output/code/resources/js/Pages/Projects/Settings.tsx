@@ -97,7 +97,7 @@ export default function ProjectSettings({ project, members, available_users }: P
                 </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto bg-[#F9FAFB]/50">
+            <div className="flex-1 overflow-y-auto bg-background/50">
                 <div className="max-w-5xl mx-auto py-10 px-8">
                     {activeTab === 'general' && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">

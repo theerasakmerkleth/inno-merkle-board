@@ -54,11 +54,11 @@ const Analytics = ({ resourceLoad, avgCycleTimeHours, avgCycleTimeDays }: PagePr
               </div>
 
               {/* Card 3: AI Insights */}
-              <div className="bg-[#0391F2]/10 border border-[#0391F2]/30 rounded-lg p-6 flex flex-col shadow-sm relative overflow-hidden">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 flex flex-col shadow-sm relative overflow-hidden">
                   <div className="absolute -right-4 -top-4 opacity-10">
-                      <span className="material-icons text-[100px] text-[#0391F2]">smart_toy</span>
+                      <span className="material-icons text-[100px] text-primary">smart_toy</span>
                   </div>
-                  <h3 className="text-sm font-medium text-[#0391F2] uppercase tracking-wider mb-2 flex items-center gap-2 z-10">
+                  <h3 className="text-sm font-medium text-primary uppercase tracking-wider mb-2 flex items-center gap-2 z-10">
                       <span className="material-icons text-[16px]">smart_toy</span>
                       AI Insights
                   </h3>

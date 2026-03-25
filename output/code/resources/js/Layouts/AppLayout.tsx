@@ -59,13 +59,13 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
       )}
 
       {/* LEFT SIDEBAR */}
-      <aside className={`w-64 border-r border-border flex flex-col flex-shrink-0 absolute inset-y-0 left-0 z-50 bg-card transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out`}>
+      <aside className={`w-64 border-r border-sidebar-border flex flex-col flex-shrink-0 absolute inset-y-0 left-0 z-50 bg-sidebar transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out`}>
         
         {/* Top Area: Brand & Workspace */}
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-sidebar-border">
             <Link href="/" className="mb-6 flex items-center gap-2 px-1">
                 <img src="/images/merkle-logo.png" alt="Merkle" className="h-6" />
-                <span className="font-bold text-foreground text-sm tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{appName}</span>
+                <span className="font-bold text-sidebar-foreground text-sm tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{appName}</span>
             </Link>
             <nav className="space-y-1">
                 {navLinks.map((link) => (
@@ -74,11 +74,11 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
                         href={link.href} 
                         className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all duration-200 group ${
                             link.active 
-                            ? 'bg-primary text-white shadow-sm font-semibold' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm font-semibold' 
+                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                         }`}
                     >
-                        <span className={`material-icons text-[18px] transition-colors ${link.active ? 'text-white' : 'text-muted-foreground group-hover:text-primary'}`}>
+                        <span className={`material-icons text-[18px] transition-colors ${link.active ? 'text-sidebar-primary-foreground' : 'text-sidebar-foreground/40 group-hover:text-sidebar-primary'}`}>
                             {link.icon}
                         </span>
                         {link.name}
@@ -88,13 +88,13 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
         </div>
 
         {/* Projects Section */}
-        <div className="p-4 border-b border-border flex-1 overflow-y-auto">
+        <div className="p-4 border-b border-sidebar-border flex-1 overflow-y-auto">
             <div className="flex justify-between items-center mb-2 px-3">
-                <Link href="/projects" className={`text-[10px] uppercase tracking-wider transition-colors font-medium ${url.startsWith('/projects') && !available_projects.some(p => url.includes(`/projects/${p.key}`)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                <Link href="/projects" className={`text-[10px] uppercase tracking-wider transition-colors font-medium ${url.startsWith('/projects') && !available_projects.some(p => url.includes(`/projects/${p.key}`)) ? 'text-sidebar-primary' : 'text-sidebar-foreground/50 hover:text-sidebar-foreground'}`}>
                     Projects
                 </Link>
                 {((auth?.user as any)?.role === 'Admin' || (auth?.user as any)?.role === 'Project Manager') && (
-                    <Link href="/projects" className="text-muted-foreground hover:text-primary transition-colors flex items-center justify-center p-0.5 rounded-sm hover:bg-primary/10">
+                    <Link href="/projects" className="text-sidebar-foreground/40 hover:text-sidebar-primary transition-colors flex items-center justify-center p-0.5 rounded-sm hover:bg-sidebar-primary/10">
                         <span className="material-icons text-[14px]">add</span>
                     </Link>
                 )}
@@ -112,11 +112,11 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
                                 href={`/projects/${p.key}/boards`}
                                 className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors rounded-sm group ${
                                     isProjectActive 
-                                    ? 'bg-primary/5 text-primary font-medium' 
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                    ? 'bg-sidebar-primary/5 text-sidebar-primary font-medium' 
+                                    : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                                 }`}
                             >
-                                <span className={`font-mono text-[10px] ${isProjectActive ? 'text-primary/70' : 'text-muted-foreground/70 group-hover:text-foreground/70'}`}>
+                                <span className={`font-mono text-[10px] ${isProjectActive ? 'text-sidebar-primary/70' : 'text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70'}`}>
                                     [{p.key}]
                                 </span>
                                 <span className="truncate flex-1">{p.name}</span>
@@ -129,17 +129,17 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
         </div>
 
         {/* Bottom Area: User Profile */}
-        <div className="mt-auto p-4 border-t border-border flex items-center justify-between bg-card hover:bg-muted/50 transition-colors">
+        <div className="mt-auto p-4 border-t border-sidebar-border flex items-center justify-between bg-sidebar hover:bg-sidebar-accent transition-colors">
              <div className="flex items-center gap-3 truncate">
-                  <div className="h-8 w-8 rounded-full bg-muted border border-border text-muted-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-sidebar-accent border border-sidebar-border text-sidebar-foreground/60 flex items-center justify-center text-xs font-medium flex-shrink-0">
                     {auth.user.name.substring(0, 2).toUpperCase()}
                   </div>
                   <div className="truncate">
-                    <div className="text-sm font-medium text-foreground truncate leading-tight">{auth.user.name}</div>
-                    <div className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">{(auth?.user as any)?.role || 'User'}</div>
+                    <div className="text-sm font-medium text-sidebar-foreground truncate leading-tight">{auth.user.name}</div>
+                    <div className="text-[10px] text-sidebar-foreground/50 truncate leading-tight mt-0.5">{(auth?.user as any)?.role || 'User'}</div>
                   </div>
              </div>
-             <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive p-1.5 rounded-sm hover:bg-destructive/10 transition-colors flex-shrink-0 ml-2" title="Sign out">
+             <button onClick={handleLogout} className="text-sidebar-foreground/40 hover:text-destructive p-1.5 rounded-sm hover:bg-destructive/10 transition-colors flex-shrink-0 ml-2" title="Sign out">
                  <span className="material-icons text-[16px]">logout</span>
              </button>
         </div>
