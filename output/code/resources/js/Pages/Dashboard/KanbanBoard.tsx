@@ -4,7 +4,7 @@ import { arrayMove, SortableContext, horizontalListSortingStrategy, verticalList
 import { CSS } from '@dnd-kit/utilities';
 import { Head, router, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import TaskModal from '@/Components/Task/TaskModal';
+import TaskModal from '@/components/Task/TaskModal';
 import { TaskListView } from '@/components/Task/TaskListView';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
