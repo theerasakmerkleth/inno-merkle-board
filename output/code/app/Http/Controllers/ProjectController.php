@@ -25,6 +25,7 @@ class ProjectController extends Controller
 
         return Inertia::render('Projects/Index', [
             'projects' => $projects,
+            'users' => User::all(['id', 'name', 'email']),
         ]);
     }
 
@@ -53,6 +54,11 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'key' => 'required|string|min:2|max:5|uppercase|unique:projects,key',
+            'business_domain' => 'nullable|string|max:255',
+            'visibility' => ['required', Rule::in(['public', 'private'])],
+            'member_ids' => 'nullable|array',
+            'member_ids.*' => 'exists:users,id',
+            'auto_provision' => 'boolean',
         ]);
 
         $project = DB::transaction(function () use ($validated, $request) {
@@ -60,22 +66,47 @@ class ProjectController extends Controller
                 'name' => $validated['name'],
                 'key' => $validated['key'],
                 'status' => 'active',
+                'visibility' => $validated['visibility'],
+                'business_domain' => $validated['business_domain'] ?? null,
+                'ai_model' => 'gemini-1.5-flash', // Default for new projects
             ]);
 
             // Add creator as Manager
             $project->users()->attach($request->user()->id, ['project_role' => 'Manager']);
 
-            // Create default Main Board
-            Board::create([
-                'project_id' => $project->id,
-                'name' => 'Main Board',
-                'is_default' => true,
-            ]);
+            // Add initial members if provided
+            if (!empty($validated['member_ids'])) {
+                $members = array_unique($validated['member_ids']);
+                // Ensure creator is not added again
+                $members = array_diff($members, [$request->user()->id]);
+                foreach ($members as $userId) {
+                    $project->users()->attach($userId, ['project_role' => 'Contributor']);
+                }
+            }
+
+            // Provision Boards
+            if ($validated['auto_provision'] ?? false) {
+                $standardBoards = ['Backlog', 'Sprint Board', 'Bug Triage'];
+                foreach ($standardBoards as $index => $boardName) {
+                    Board::create([
+                        'project_id' => $project->id,
+                        'name' => $boardName,
+                        'is_default' => $index === 0,
+                    ]);
+                }
+            } else {
+                // Create default Main Board
+                Board::create([
+                    'project_id' => $project->id,
+                    'name' => 'Main Board',
+                    'is_default' => true,
+                ]);
+            }
 
             return $project;
         });
 
-        return redirect()->route('projects.board', ['project_key' => $project->key])->with('success', 'Project created successfully.');
+        return redirect()->route('projects.board', ['project_key' => $project->key])->with('success', 'Project provisioned successfully.');
     }
 
     public function edit(Request $request, $project_key)
@@ -102,6 +133,9 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'status' => ['required', Rule::in(['active', 'archived'])],
+            'business_domain' => 'nullable|string|max:255',
+            'ai_instructions' => 'nullable|string',
+            'ai_model' => ['required', Rule::in(['gemini-3.1-pro-preview', 'gemini-1.5-pro', 'gemini-1.5-flash'])],
         ]);
 
         $project->update($validated);

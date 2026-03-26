@@ -29,6 +29,7 @@ export default function Login() {
             <input
               id="email"
               type="email"
+              autoComplete="username"
               className="w-full bg-transparent border-0 border-b border-border px-0 py-2 text-sm text-foreground focus:ring-0 focus:border-ring placeholder:text-muted-foreground transition-colors"
               placeholder="Email address"
               required
@@ -43,6 +44,7 @@ export default function Login() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               className="w-full bg-transparent border-0 border-b border-border px-0 py-2 text-sm text-foreground focus:ring-0 focus:border-ring placeholder:text-muted-foreground transition-colors"
               placeholder="Password"
               required
@@ -60,16 +62,6 @@ export default function Login() {
             {processing ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-
-        <div className="pt-8 border-t border-border text-center">
-           <div className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Test Accounts</div>
-           <div className="flex justify-center gap-4 text-xs font-mono text-muted-foreground">
-              <span>admin@merkle.com</span>
-              <span>pm@merkle.com</span>
-              <span>dev@merkle.com</span>
-           </div>
-           <div className="text-xs font-mono text-muted-foreground mt-2">password: password</div>
-        </div>
 
       </div>
     </div>

@@ -15,6 +15,8 @@ use App\Http\Controllers\ProjectStatsController;
 use App\Http\Controllers\RoadmapController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AIController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\ExportController;
@@ -87,8 +89,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/tasks/{task}/comments', [CommentController::class, 'index']);
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store']);
 
-    // Exports
-    Route::get('/projects/{project}/export', [ExportController::class, 'exportTasks']);
+    // AI Co-Pilot (F54)
+    Route::post('/projects/{project}/ai/analyze', [AIController::class, 'analyze']);
+    Route::post('/projects/{project}/ai/auto-plan', [AIController::class, 'autoPlan']);
+    Route::post('/projects/{project}/ai/commit', [AIController::class, 'commitTasks']);
+
+    // Profile & Security (US-060)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('password.update');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);

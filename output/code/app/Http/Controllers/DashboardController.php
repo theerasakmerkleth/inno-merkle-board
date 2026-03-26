@@ -20,6 +20,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard/MyTasks', [
             'tasks' => $tasks,
+            'users' => User::all(['id', 'name', 'email']),
         ]);
     }
 
@@ -57,6 +58,7 @@ class DashboardController extends Controller
             'resourceLoad' => $resourceLoad,
             'avgCycleTimeHours' => $avgCycleTimeHours,
             'avgCycleTimeDays' => $avgCycleTimeDays,
+            'users' => User::all(['id', 'name', 'email']),
         ]);
     }
 }

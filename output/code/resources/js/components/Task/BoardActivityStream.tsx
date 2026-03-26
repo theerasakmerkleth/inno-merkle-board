@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Log {
@@ -82,7 +82,10 @@ export function BoardActivityStream({ projectKey, boardId, onTaskClick }: Props)
                         <div className="h-8 w-8 rounded-lg bg-zinc-50 flex items-center justify-center">
                             <span className="material-icons text-zinc-400 text-[18px]">history</span>
                         </div>
-                        <SheetTitle className="text-base font-bold tracking-tight text-zinc-900">Board Activity</SheetTitle>
+                        <div>
+                            <SheetTitle className="text-base font-bold tracking-tight text-zinc-900">Board Activity</SheetTitle>
+                            <SheetDescription className="sr-only">Recent activity and change log for this board.</SheetDescription>
+                        </div>
                     </div>
                 </SheetHeader>
 

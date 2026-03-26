@@ -3,33 +3,33 @@ import { router, usePage, Link } from '@inertiajs/react';
 import { Command } from 'cmdk';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Toaster } from '@/components/ui/sonner';
-
-interface Project {
-  id: number;
-  key: string;
-  name: string;
-}
-
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { Toaster } from 'sonner';
 import { NotificationInbox } from '@/components/NotificationInbox';
+import CreateProjectSheet from '@/components/CreateProjectSheet';
 
 interface AppLayoutProps {
   children: ReactNode;
   breadcrumbs?: ReactNode;
-  available_projects?: Project[];
+  available_projects?: any[];
+  appName?: string;
 }
 
-export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
-  const { auth, available_projects = [], appName } = usePage<{ auth: { user: { name: string } }, available_projects?: Project[], appName: string }>().props;
-  const { url } = usePage();
+export default function AppLayout({ children, breadcrumbs, available_projects: explicitProjects, appName = 'MerkleBoard' }: AppLayoutProps) {
+  const { url, props } = usePage<any>();
+  const { auth, available_projects: sharedProjects = [] } = props;
+  const available_projects = explicitProjects || sharedProjects;
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [commandOpen, setCommandOpen] = useState(false);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+
+  const canCreateProject = auth.user.role === 'Admin' || auth.user.role === 'Project Manager';
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setCommandOpen((open) => !open);
+        setIsSearchOpen((open) => !open);
       }
     };
     document.addEventListener('keydown', down);
@@ -50,183 +50,155 @@ export default function AppLayout({ children, breadcrumbs }: AppLayoutProps) {
   return (
     <div className="flex h-screen bg-background text-foreground font-sans overflow-hidden">
       
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" 
-          onClick={() => setSidebarOpen(false)} 
-        />
-      )}
+      {/* MOBILE TRIGGER */}
+      <div className="md:hidden fixed bottom-6 right-6 z-50">
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+              <SheetTrigger asChild>
+                  <button className="h-12 w-12 rounded-full bg-primary text-white shadow-xl flex items-center justify-center">
+                      <span className="material-icons">menu</span>
+                  </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72 bg-sidebar border-r-sidebar-border">
+                  <SheetHeader className="px-6 py-4 border-b border-sidebar-border bg-sidebar">
+                      <SheetTitle className="text-sm font-bold text-sidebar-foreground">Menu Navigation</SheetTitle>
+                      <SheetDescription className="sr-only">Primary workspace navigation and project list.</SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto p-4">
+                      {/* Sidebar Content Clone */}
+                      <nav className="space-y-1">
+                          {navLinks.map((link) => (
+                              <Link key={link.name} href={link.href} onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all ${link.active ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground/70'}`}>
+                                  <span className="material-icons text-[18px]">{link.icon}</span>
+                                  {link.name}
+                              </Link>
+                          ))}
+                      </nav>
+                  </div>
+              </SheetContent>
+          </Sheet>
+      </div>
 
-      {/* LEFT SIDEBAR */}
-      <aside className={`w-64 border-r border-sidebar-border flex flex-col flex-shrink-0 absolute inset-y-0 left-0 z-50 bg-sidebar transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out`}>
-        
-        {/* Top Area: Brand & Workspace */}
+      {/* LEFT SIDEBAR (Desktop) */}
+      <aside className="w-64 border-r border-sidebar-border flex flex-col flex-shrink-0 bg-sidebar hidden md:flex">
         <div className="p-4 border-b border-sidebar-border">
             <Link href="/" className="mb-6 flex items-center gap-2 px-1">
                 <img src="/images/merkle-logo.png" alt="Merkle" className="h-6" />
-                <span className="font-bold text-sidebar-foreground text-sm tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{appName}</span>
+                <span className="font-bold text-sidebar-foreground text-sm tracking-tight">{appName}</span>
             </Link>
             <nav className="space-y-1">
                 {navLinks.map((link) => (
-                    <Link 
-                        key={link.name}
-                        href={link.href} 
-                        className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all duration-200 group ${
-                            link.active 
-                            ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm font-semibold' 
-                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                        }`}
-                    >
-                        <span className={`material-icons text-[18px] transition-colors ${link.active ? 'text-sidebar-primary-foreground' : 'text-sidebar-foreground/40 group-hover:text-sidebar-primary'}`}>
-                            {link.icon}
-                        </span>
+                    <Link key={link.name} href={link.href} className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all duration-200 group ${link.active ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm font-semibold' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'}`}>
+                        <span className={`material-icons text-[18px] transition-colors ${link.active ? 'text-sidebar-primary-foreground' : 'text-sidebar-foreground/40 group-hover:text-sidebar-primary'}`}>{link.icon}</span>
                         {link.name}
                     </Link>
                 ))}
             </nav>
         </div>
 
-        {/* Projects Section */}
         <div className="p-4 border-b border-sidebar-border flex-1 overflow-y-auto">
-            <div className="flex justify-between items-center mb-2 px-3">
-                <Link href="/projects" className={`text-[10px] uppercase tracking-wider transition-colors font-medium ${url.startsWith('/projects') && !available_projects.some(p => url.includes(`/projects/${p.key}`)) ? 'text-sidebar-primary' : 'text-sidebar-foreground/50 hover:text-sidebar-foreground'}`}>
-                    Projects
-                </Link>
-                {((auth?.user as any)?.role === 'Admin' || (auth?.user as any)?.role === 'Project Manager') && (
-                    <Link href="/projects" className="text-sidebar-foreground/40 hover:text-sidebar-primary transition-colors flex items-center justify-center p-0.5 rounded-sm hover:bg-sidebar-primary/10">
+            <div className="flex justify-between items-center mb-2 px-3 group/header">
+                <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50 font-bold">Projects</span>
+                {canCreateProject && (
+                    <button 
+                        onClick={() => setIsCreatingProject(true)}
+                        className="h-5 w-5 rounded bg-sidebar-accent text-sidebar-foreground/40 hover:text-sidebar-primary hover:bg-sidebar-primary/10 transition-all opacity-0 group-hover/header:opacity-100 flex items-center justify-center"
+                        title="New Project"
+                    >
                         <span className="material-icons text-[14px]">add</span>
-                    </Link>
+                    </button>
                 )}
             </div>
-            {available_projects && available_projects.length > 0 && (
-                <nav className="space-y-1 mt-3">
-                    {available_projects.map(p => {
-                        const isProjectActive = url.includes(`/projects/${p.key}`);
-                        const userRole = (auth?.user as any)?.role;
-                        const canManage = userRole === 'Admin' || userRole === 'Project Manager';
-                        
-                        return (
-                            <Link 
-                                key={p.id} 
-                                href={`/projects/${p.key}/boards`}
-                                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors rounded-sm group ${
-                                    isProjectActive 
-                                    ? 'bg-sidebar-primary/5 text-sidebar-primary font-medium' 
-                                    : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                                }`}
-                            >
-                                <span className={`font-mono text-[10px] ${isProjectActive ? 'text-sidebar-primary/70' : 'text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70'}`}>
-                                    [{p.key}]
-                                </span>
-                                <span className="truncate flex-1">{p.name}</span>
-                                {!canManage && <span className="material-icons text-[12px] opacity-40 group-hover:opacity-70">lock</span>}
-                            </Link>
-                        );
-                    })}
-                </nav>
-            )}
+            <nav className="space-y-1 mt-3">
+                {available_projects.map(p => (
+                    <Link key={p.id} href={`/projects/${p.key}/boards`} className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors rounded-sm ${url.includes(`/projects/${p.key}`) ? 'bg-sidebar-primary/5 text-sidebar-primary font-medium' : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground'}`}>
+                        <span className="font-mono text-[10px] opacity-40">[{p.key}]</span>
+                        <span className="truncate flex-1">{p.name}</span>
+                    </Link>
+                ))}
+            </nav>
         </div>
 
-        {/* Bottom Area: User Profile */}
-        <div className="mt-auto p-4 border-t border-sidebar-border flex items-center justify-between bg-sidebar hover:bg-sidebar-accent transition-colors">
+        <div className="mt-auto p-4 border-t border-sidebar-border flex items-center justify-between">
              <div className="flex items-center gap-3 truncate">
-                  <div className="h-8 w-8 rounded-full bg-sidebar-accent border border-sidebar-border text-sidebar-foreground/60 flex items-center justify-center text-xs font-medium flex-shrink-0">
-                    {auth.user.name.substring(0, 2).toUpperCase()}
-                  </div>
+                  <div className="h-8 w-8 rounded-full bg-sidebar-accent border border-sidebar-border text-sidebar-foreground/60 flex items-center justify-center text-xs font-medium shrink-0">{auth.user.name.substring(0, 2).toUpperCase()}</div>
                   <div className="truncate">
                     <div className="text-sm font-medium text-sidebar-foreground truncate leading-tight">{auth.user.name}</div>
-                    <div className="text-[10px] text-sidebar-foreground/50 truncate leading-tight mt-0.5">{(auth?.user as any)?.role || 'User'}</div>
+                    <div className="text-[10px] text-sidebar-foreground/50 truncate">{(auth?.user as any)?.role || 'Member'}</div>
                   </div>
              </div>
-             <button onClick={handleLogout} className="text-sidebar-foreground/40 hover:text-destructive p-1.5 rounded-sm hover:bg-destructive/10 transition-colors flex-shrink-0 ml-2" title="Sign out">
-                 <span className="material-icons text-[16px]">logout</span>
-             </button>
+             <button onClick={handleLogout} className="text-sidebar-foreground/40 hover:text-red-500 transition-colors"><span className="material-icons text-[18px]">logout</span></button>
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-          
-          {/* Top App Bar */}
-          <header className="h-14 px-4 md:px-8 border-b border-border flex items-center justify-between bg-card/80 backdrop-blur-sm z-10 flex-shrink-0">
-              <div className="flex items-center gap-4">
-                  <button 
-                    onClick={() => setSidebarOpen(true)} 
-                    className="md:hidden text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                      <span className="material-icons">menu</span>
-                  </button>
-                  <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      {breadcrumbs || <span>Workspace</span>}
-                  </div>
-              </div>
+      {/* MAIN CONTENT */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <header className="h-14 border-b border-border bg-background flex items-center justify-between px-8 flex-shrink-0 z-40">
+            <div className="flex items-center gap-4">{breadcrumbs}</div>
+            <div className="flex items-center gap-4">
+                <button onClick={() => setIsSearchOpen(true)} className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-muted/30 text-muted-foreground hover:border-primary/30 transition-all group">
+                    <span className="material-icons text-[18px] group-hover:text-primary">search</span>
+                    <span className="text-xs font-medium pr-8">Search...</span>
+                    <kbd className="text-[10px] font-mono border border-border px-1.5 rounded bg-white">⌘K</kbd>
+                </button>
+                <div className="w-px h-6 bg-border mx-2"></div>
+                <NotificationInbox />
+                <div className="w-px h-6 bg-border mx-2"></div>
+                
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 hover:bg-primary/20 transition-all outline-none">
+                            <span className="material-icons text-[20px]">person</span>
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 mt-1 p-1 bg-white border border-border shadow-xl rounded-xl z-[100]">
+                        <div className="px-3 py-2 border-b border-zinc-50 mb-1">
+                            <p className="text-xs font-bold text-zinc-900 truncate">{auth.user.name}</p>
+                            <p className="text-[10px] text-zinc-400 font-medium truncate">{auth.user.email}</p>
+                        </div>
+                        <DropdownMenuItem asChild className="flex items-center gap-3 px-3 py-2 cursor-pointer rounded-md focus:bg-primary/5 focus:text-primary transition-colors outline-none">
+                            <Link href="/profile" className="flex items-center gap-3 w-full">
+                                <span className="material-icons text-[18px]">account_circle</span>
+                                <span className="text-xs font-bold text-zinc-900">My Profile</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-3 px-3 py-2 cursor-pointer rounded-md focus:bg-red-50 focus:text-red-600 transition-colors outline-none">
+                            <span className="material-icons text-[18px]">logout</span>
+                            <span className="text-xs font-bold">Logout</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </header>
 
-              <div className="flex items-center gap-4">
-                  <button 
-                    onClick={() => setCommandOpen(true)}
-                    className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-muted border border-border rounded-md hover:bg-accent hover:text-foreground transition-colors w-64"
-                  >
-                      <span className="material-icons text-[14px]">search</span>
-                      <span>Search or jump to...</span>
-                      <kbd className="ml-auto font-sans text-[10px] bg-background border border-border text-muted-foreground px-1.5 py-0.5 rounded">⌘K</kbd>
-                  </button>
-                  <button 
-                    onClick={() => setCommandOpen(true)}
-                    className="md:hidden text-muted-foreground hover:text-foreground"
-                  >
-                      <span className="material-icons">search</span>
-                  </button>
-                  <NotificationInbox />
-              </div>
-          </header>
-          
-          {/* Content Body */}
-          <div className="flex-1 overflow-hidden flex flex-col relative">
-              {children}
-          </div>
+        <div className="flex-1 overflow-hidden flex flex-col relative">{children}</div>
       </main>
 
-      {/* Command Palette */}
-      {commandOpen && (
-          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-[20vh] px-4" onClick={() => setCommandOpen(false)}>
-              <div className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-xl overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-                  <Command className="w-full">
-                      <div className="flex items-center px-4 border-b border-border">
-                        <span className="material-icons text-muted-foreground mr-2">search</span>
-                        <Command.Input 
-                            placeholder="Type a command or search..." 
-                            className="w-full bg-transparent border-0 py-4 text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/70"
-                            autoFocus
-                        />
+      {/* SEARCH OVERLAY */}
+      {isSearchOpen && (
+          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 bg-black/40 backdrop-blur-sm" onClick={() => setIsSearchOpen(false)}>
+              <div className="w-full max-w-2xl bg-background rounded-xl shadow-2xl overflow-hidden border border-border animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                  <Command className="flex flex-col">
+                      <div className="flex items-center border-b border-border px-4 py-3">
+                          <span className="material-icons text-muted-foreground mr-3">search</span>
+                          <Command.Input autoFocus placeholder="Find tasks or commands..." className="flex-1 bg-transparent border-none focus:ring-0 text-sm outline-none" />
                       </div>
-                      <Command.List className="max-h-[300px] overflow-y-auto p-2">
-                          <Command.Empty className="py-6 text-center text-sm text-muted-foreground">No results found.</Command.Empty>
-                          
-                          <Command.Group heading="Navigation" className="text-xs font-medium text-muted-foreground px-2 py-1">
-                              <Command.Item onSelect={() => { router.get('/'); setCommandOpen(false); }} className="flex items-center gap-2 px-2 py-2 text-sm text-foreground hover:bg-muted rounded-sm cursor-pointer aria-selected:bg-muted aria-selected:text-foreground">
-                                  <span className="material-icons text-[16px] text-muted-foreground">inbox</span> My Tasks
-                              </Command.Item>
-                              <Command.Item onSelect={() => { router.get('/analytics'); setCommandOpen(false); }} className="flex items-center gap-2 px-2 py-2 text-sm text-foreground hover:bg-muted rounded-sm cursor-pointer aria-selected:bg-muted aria-selected:text-foreground">
-                                  <span className="material-icons text-[16px] text-muted-foreground">bar_chart</span> Analytics Dashboard
-                              </Command.Item>
+                      <Command.List className="max-h-[350px] overflow-y-auto p-2 scrollbar-hide">
+                          <Command.Empty className="py-12 text-center text-sm text-muted-foreground font-medium">No results found.</Command.Empty>
+                          <Command.Group heading="Navigation" className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest px-3 py-2">
+                              {navLinks.map(link => (
+                                  <Command.Item key={link.name} onSelect={() => { router.visit(link.href); setIsSearchOpen(false); }} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-primary/5 aria-selected:bg-primary/5 transition-colors">
+                                      <span className="material-icons text-[18px] text-muted-foreground">{link.icon}</span>
+                                      {link.name}
+                                  </Command.Item>
+                              ))}
                           </Command.Group>
-
-                          {available_projects && available_projects.length > 0 && (
-                              <Command.Group heading="Projects" className="text-xs font-medium text-muted-foreground px-2 py-1 mt-2">
-                                  {available_projects.map(p => (
-                                      <Command.Item key={p.id} onSelect={() => { router.get(`/projects/${p.key}/boards`); setCommandOpen(false); }} className="flex items-center gap-2 px-2 py-2 text-sm text-foreground hover:bg-muted rounded-sm cursor-pointer aria-selected:bg-muted aria-selected:text-foreground">
-                                          <span className="font-mono text-[10px] text-muted-foreground">[{p.key}]</span> {p.name}
-                                      </Command.Item>
-                                  ))}
-                              </Command.Group>
-                          )}
                       </Command.List>
                   </Command>
               </div>
           </div>
       )}
-      <Toaster />
+      <CreateProjectSheet open={isCreatingProject} onOpenChange={setIsCreatingProject} />
+      <Toaster position="top-right" expand={false} richColors />
     </div>
   );
 }

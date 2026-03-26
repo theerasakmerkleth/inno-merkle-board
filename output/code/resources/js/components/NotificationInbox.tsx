@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { router } from '@inertiajs/react';
@@ -121,14 +121,17 @@ export function NotificationInbox() {
             </SheetTrigger>
             <SheetContent className="w-full sm:max-w-md p-0 flex flex-col border-l border-border bg-card">
                 <SheetHeader className="p-4 border-b border-border flex flex-row items-center justify-between space-y-0 sticky top-0 bg-card/95 backdrop-blur z-10">
-                    <SheetTitle className="text-lg font-semibold flex items-center gap-2">
-                        Inbox
-                        {unreadCount > 0 && (
-                            <Badge variant="secondary" className="bg-primary/10 text-primary text-xs px-1.5 py-0">
-                                {unreadCount} new
-                            </Badge>
-                        )}
-                    </SheetTitle>
+                    <div className="flex flex-col gap-0.5">
+                        <SheetTitle className="text-lg font-semibold flex items-center gap-2">
+                            Inbox
+                            {unreadCount > 0 && (
+                                <Badge variant="secondary" className="bg-primary/10 text-primary text-xs px-1.5 py-0">
+                                    {unreadCount} new
+                                </Badge>
+                            )}
+                        </SheetTitle>
+                        <SheetDescription className="sr-only">Your project notifications and activity alerts.</SheetDescription>
+                    </div>
                     {unreadCount > 0 && (
                         <button 
                             onClick={markAllAsRead}

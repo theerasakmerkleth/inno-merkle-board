@@ -6,6 +6,7 @@ import { Head, router, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import TaskModal from '@/components/Task/TaskModal';
 import { TaskListView } from '@/components/Task/TaskListView';
+import { AICommandCenter } from '@/components/AI/AICommandCenter';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
@@ -71,6 +72,16 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [initialColIdForCreate, setInitialColIdForCreate] = useState<number | null>(null);
 
+  // UI State
+  const [isConfigMode, setIsConfigMode] = useState(false);
+  const [isCreatingBoard, setIsCreatingBoard] = useState(false);
+  const [newBoardName, setNewBoardName] = useState('');
+  const [isCreatingColumn, setIsCreatingColumn] = useState(false);
+  const [newColumnTitle, setNewColumnTitle] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterAssignee, setFilterAssignee] = useState<number | string>('all');
+  const [filterPriority, setFilterPriority] = useState('all');
+
   // Auto-open task modal from URL query param
   useEffect(() => {
       const params = new URLSearchParams(window.location.search);
@@ -86,13 +97,8 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
       }
   }, [boardColumns]);
 
-  useEffect(() => {
-    setBoardColumns(columns || []);
-  }, [columns]);
-
-  useEffect(() => {
-      setProjectBoards(project_boards || []);
-  }, [project_boards]);
+  useEffect(() => { setBoardColumns(columns || []); }, [columns]);
+  useEffect(() => { setProjectBoards(project_boards || []); }, [project_boards]);
 
   if (!current_project || !active_board) {
       return (
@@ -107,29 +113,13 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
       );
   }
 
-  const [isConfigMode, setIsConfigMode] = useState(false);
-  const [isCreatingBoard, setIsCreatingBoard] = useState(false);
-  const [newBoardName, setNewBoardName] = useState('');
-  const [isCreatingColumn, setIsCreatingColumn] = useState(false);
-  const [newColumnTitle, setNewColumnTitle] = useState('');
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterAssignee, setFilterAssignee] = useState<number | string>('all');
-  const [filterPriority, setFilterPriority] = useState('all');
-
   const isAdmin = auth?.user?.role === 'Admin' || auth?.user?.roles?.some((r: any) => r.name === 'Admin');
   const canCreateOrEdit = project_role === 'Manager' || project_role === 'Contributor' || isAdmin;
   const canDelete = project_role === 'Manager' || isAdmin;
   const canMoveTasks = canCreateOrEdit;
   const isStructureUnlocked = (project_role === 'Manager' || isAdmin) && isConfigMode;
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-        activationConstraint: {
-            distance: 8,
-        },
-    })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumn, setActiveColumn] = useState<ColumnProps | null>(null);
@@ -142,8 +132,7 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
             ...col,
             tasks: (col.tasks || []).filter(task => {
                 if (!task) return false;
-                const matchesSearch = (task.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                      (task.formatted_id || '').toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesSearch = (task.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || (task.formatted_id || '').toLowerCase().includes(searchQuery.toLowerCase());
                 const matchesAssignee = filterAssignee === 'all' || task.assignee_id === Number(filterAssignee);
                 const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
                 return matchesSearch && matchesAssignee && matchesPriority;
@@ -152,31 +141,9 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
     }).filter(Boolean) as ColumnProps[];
   }, [boardColumns, searchQuery, filterAssignee, filterPriority]);
 
-  const breadcrumbs = (
-    <div className="flex items-center gap-1.5 text-zinc-400 font-medium">
-        <span className="material-icons text-[14px]">folder_open</span>
-        <span className="text-zinc-900">{current_project?.name}</span>
-        <span className="material-icons text-[14px]">chevron_right</span>
-        <span>Boards</span>
-    </div>
-  );
-
-  const openCreateModal = (columnId: number | null = null) => {
-    setEditingTask(null);
-    setInitialColIdForCreate(columnId);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (task: Task) => {
-    setEditingTask(task);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingTask(null);
-    setInitialColIdForCreate(null);
-  };
+  const openCreateModal = (columnId: number | null = null) => { setEditingTask(null); setInitialColIdForCreate(columnId); setIsModalOpen(true); };
+  const openEditModal = (task: Task) => { setEditingTask(task); setIsModalOpen(true); };
+  const closeModal = () => { setIsModalOpen(false); setEditingTask(null); setInitialColIdForCreate(null); };
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -194,16 +161,12 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
     if (activeType !== 'Task') return;
     const activeTaskId = active.data.current?.task?.id;
     if (!activeTaskId) return;
-    let overId = null;
-    if (overType === 'Task') overId = over.data.current?.task?.id;
-    else if (overType === 'Column') overId = over.data.current?.column?.id;
+    let overId = overType === 'Task' ? over.data.current?.task?.id : over.data.current?.column?.id;
     if (!overId || activeTaskId === overId) return;
 
     setBoardColumns((prevColumns) => {
         const sourceColIdx = prevColumns.findIndex(col => (col?.tasks || []).some(t => t?.id === activeTaskId));
-        let targetColIdx = -1;
-        if (overType === 'Task') targetColIdx = prevColumns.findIndex(col => (col?.tasks || []).some(t => t?.id === overId));
-        else if (overType === 'Column') targetColIdx = prevColumns.findIndex(col => col?.id == overId);
+        let targetColIdx = overType === 'Task' ? prevColumns.findIndex(col => (col?.tasks || []).some(t => t?.id === overId)) : prevColumns.findIndex(col => col?.id == overId);
         if (sourceColIdx === -1 || targetColIdx === -1 || sourceColIdx === targetColIdx) return prevColumns;
         const targetColObj = prevColumns[targetColIdx];
         if (targetColObj?.title?.toLowerCase().includes('done') && !user_permissions.can_move_to_done) return prevColumns;
@@ -271,34 +234,52 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
   const handleCreateColumn = (e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter' && newColumnTitle.trim()) { router.post(`/boards/${active_board?.id}/columns`, { title: newColumnTitle }, { onSuccess: () => { setIsCreatingColumn(false); setNewColumnTitle(''); } }); } };
   const handleRenameColumn = (id: number, title: string) => router.patch(`/columns/${id}`, { title }, { preserveScroll: true });
   const handleDeleteColumn = (id: number) => { if (confirm('Delete this column and move tasks to the first column?')) router.delete(`/columns/${id}`, { preserveScroll: true }); };
+  const handleDeleteBoard = () => { if (confirm(`Are you sure you want to delete board "${active_board?.name}"?`)) { router.delete(`/boards/${active_board?.id}`, { onSuccess: () => toast.success('Board deleted successfully.') }); } };
   const handleExport = (type: 'board' | 'project') => window.location.href = `/exports/tasks?type=${type}&id=${type === 'board' ? active_board?.id : current_project?.id}`;
+
+  const breadcrumbs = (
+    <div className="flex items-center gap-1.5 text-zinc-400 font-medium">
+        <span className="material-icons text-[14px]">folder_open</span>
+        <span className="text-zinc-900">[{current_project?.key}] {current_project?.name}</span>
+    </div>
+  );
 
   return (
     <AppLayout breadcrumbs={breadcrumbs} available_projects={available_projects}>
       <Head title={`${active_board?.name} | ${current_project?.key}`} />
       
-      <header className="px-4 md:px-8 pt-6 pb-0 border-b border-zinc-200/50 flex-shrink-0 bg-white/80 backdrop-blur-xl sticky top-0 z-20">
+      {/* UNIFIED WORKSPACE HEADER (v57) */}
+      <header className="px-4 md:px-8 pt-6 pb-0 border-b border-primary/5 flex-shrink-0 bg-background/80 backdrop-blur-xl sticky top-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
           <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-6">
                  <div className="flex flex-col">
                     <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">{active_board?.name}</h1>
-                    <p className="text-xs text-zinc-500 font-medium">Manage team workflow and task execution.</p>
+                    <p className="text-xs text-zinc-500 font-medium">Unified project execution and lifecycle management.</p>
                  </div>
                  {canCreateOrEdit && (
-                     <button onClick={() => openCreateModal()} className="bg-primary hover:bg-primary/90 text-white text-[11px] px-5 py-2 rounded-md transition-all shadow-sm flex items-center gap-2 font-bold uppercase tracking-wider">
-                        <span className="material-icons text-[16px]">add</span> Create Task
-                     </button>
+                     <div className="flex items-center gap-2">
+                        <AICommandCenter projectId={current_project.id} projectKey={current_project.key} />
+                        <button onClick={() => openCreateModal()} className="bg-primary hover:bg-primary/90 text-white text-[10px] px-3 py-1.5 rounded-md transition-all shadow-md shadow-primary/10 flex items-center gap-1.5 font-black uppercase tracking-wider">
+                            <span className="material-icons text-[16px]">add</span> Create Task
+                        </button>
+                     </div>
                  )}
               </div>
               
               <div className="flex items-center gap-3">
+                  {(project_role === 'Manager' || isAdmin) && (
+                      <Link href={`/projects/${current_project.key}/settings`} className="bg-white border border-zinc-200 text-zinc-500 hover:text-primary hover:border-primary/30 p-1.5 rounded-md transition-all flex items-center shadow-sm" title="Project Settings">
+                          <span className="material-icons text-[20px]">settings</span>
+                      </Link>
+                  )}
+
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                           <button className="bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 px-2.5 py-1.5 rounded-md transition-all flex items-center shadow-sm">
                               <span className="material-icons text-[20px]">more_horiz</span>
                           </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 bg-white border border-zinc-200 shadow-lg rounded-lg">
+                      <DropdownMenuContent align="end" className="w-56 bg-white border border-zinc-200 shadow-xl rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                           <DropdownMenuItem onClick={() => setIsConfigMode(!isConfigMode)} className="text-xs cursor-pointer hover:bg-zinc-50 py-2.5">
                               <span className="material-icons text-[16px] mr-3 text-zinc-400">{isConfigMode ? 'settings_suggest' : 'settings_overscan'}</span>
                               {isConfigMode ? 'Disable Configuration' : 'Configure Board'}
@@ -307,22 +288,21 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
                           <DropdownMenuItem onClick={() => handleExport('board')} className="text-xs cursor-pointer hover:bg-zinc-50 py-2.5">
                               <span className="material-icons text-[16px] mr-3 text-zinc-400">download</span> Export to Excel
                           </DropdownMenuItem>
+                          {((project_role === 'Manager' || isAdmin) && !active_board.is_default) && (
+                              <>
+                                <div className="h-px bg-zinc-100 my-1"></div>
+                                <DropdownMenuItem onClick={handleDeleteBoard} className="text-xs cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/5 py-2.5 font-semibold">
+                                    <span className="material-icons text-[16px] mr-3">delete_outline</span> Delete Board
+                                </DropdownMenuItem>
+                              </>
+                          )}
                       </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <div className="hidden sm:flex bg-zinc-100/80 rounded-md p-1 gap-1 border border-zinc-200/50">
-                      <button 
-                        onClick={() => setViewMode('board')}
-                        className={`px-4 py-1.5 text-xs font-bold transition-all rounded-[4px] border ${viewMode === 'board' ? 'bg-white text-zinc-900 shadow-sm border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900 border-transparent'}`}
-                      >
-                        Board
-                      </button>
-                      <button 
-                        onClick={() => setViewMode('list')}
-                        className={`px-4 py-1.5 text-xs font-bold transition-all rounded-[4px] border ${viewMode === 'list' ? 'bg-white text-zinc-900 shadow-sm border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900 border-transparent'}`}
-                      >
-                        List
-                      </button>
+                  {/* UNIFIED VIEW SWITCHER (v57) */}
+                  <div className="hidden sm:flex bg-zinc-100/80 rounded-md p-1 gap-1 border border-zinc-200/50 shadow-inner">
+                      <button onClick={() => setViewMode('board')} className={`px-4 py-1.5 text-xs font-bold transition-all rounded-[4px] border ${viewMode === 'board' ? 'bg-white text-zinc-900 shadow-sm border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900 border-transparent'}`}>Board</button>
+                      <button onClick={() => setViewMode('list')} className={`px-4 py-1.5 text-xs font-bold transition-all rounded-[4px] border ${viewMode === 'list' ? 'bg-white text-zinc-900 shadow-sm border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900 border-transparent'}`}>List</button>
                       <div className="w-px bg-zinc-200 mx-1 my-1" />
                       <Link href={`/projects/${current_project?.key}/roadmap`} className="px-4 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-900 transition-colors">Roadmap</Link>
                       <Link href={`/projects/${current_project?.key}/reports`} className="px-4 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-900 transition-colors">Reports</Link>
@@ -330,7 +310,7 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
               </div>
           </div>
 
-          <div className="flex gap-8 items-center overflow-x-auto no-scrollbar">
+          <div className="flex gap-8 items-center overflow-x-auto no-scrollbar pb-0.5">
               <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} sensors={sensors}>
                   <SortableContext items={(projectBoards || []).filter(b => b && b.id).map(b => `board-${b.id}`)} strategy={horizontalListSortingStrategy}>
                       {(projectBoards || []).map(b => b && (
@@ -338,17 +318,23 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
                       ))}
                   </SortableContext>
               </DndContext>
-              {(project_role === 'Manager' || isAdmin) && (
-                  <button onClick={() => setIsCreatingBoard(true)} className="pb-3 text-xs text-zinc-400 hover:text-zinc-900 flex items-center gap-1.5 font-bold uppercase tracking-widest transition-colors">
-                      <span className="material-icons text-[14px]">add</span> New Board
-                  </button>
+              {isCreatingBoard ? (
+                  <div className="pb-3 border-b-2 border-primary min-w-[120px] animate-in slide-in-from-left duration-200">
+                      <input type="text" value={newBoardName} onChange={e => setNewBoardName(e.target.value)} onKeyDown={handleCreateBoard} autoFocus onBlur={() => setIsCreatingBoard(false)} placeholder="Board name..." className="bg-transparent border-none p-0 text-xs font-extrabold uppercase tracking-widest text-zinc-900 focus:ring-0 w-full" />
+                  </div>
+              ) : (
+                  (project_role === 'Manager' || isAdmin) && (
+                      <button onClick={() => setIsCreatingBoard(true)} className="pb-3 text-xs text-zinc-400 hover:text-zinc-900 flex items-center gap-1.5 font-bold uppercase tracking-widest transition-colors border-b-2 border-transparent">
+                          <span className="material-icons text-[14px]">add</span> New Board
+                      </button>
+                  )
               )}
           </div>
 
           <div className="flex flex-wrap items-center gap-6 py-4 border-t border-zinc-100 mt-1">
               <div className="relative group flex-1 min-w-[240px] max-w-md">
                   <span className="material-icons absolute left-3 top-2.5 text-[18px] text-zinc-300 group-focus-within:text-primary transition-colors">search</span>
-                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Filter tasks by ID or name..." className="w-full bg-zinc-50/50 border border-zinc-200/60 rounded-md pl-10 pr-3 py-2 text-xs text-zinc-900 focus:ring-2 focus:ring-primary/5 focus:border-primary/30 focus:bg-white transition-all outline-none" />
+                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Filter tasks by ID or name..." className="w-full bg-zinc-50/50 border border-zinc-200/60 rounded-md pl-10 pr-3 py-2 text-xs text-zinc-900 focus:ring-2 focus:ring-primary/5 focus:border-primary/30 focus:bg-white transition-all outline-none shadow-sm" />
               </div>
               <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Assignee</span>
@@ -357,7 +343,7 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
                       {(project_members || []).map(m => m && <option key={m.id} value={m.id}>{m.name}</option>)}
                   </select>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
                   <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Priority</span>
                   <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} className="bg-white border border-zinc-200 rounded-md px-3 py-1.5 text-[11px] text-zinc-700 font-medium focus:ring-2 focus:ring-primary/5 outline-none shadow-sm transition-all" >
                       <option value="all">All Levels</option>
@@ -365,13 +351,13 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
                   </select>
               </div>
               {(searchQuery || filterAssignee !== 'all' || filterPriority !== 'all') && (
-                  <button onClick={() => { setSearchQuery(''); setFilterAssignee('all'); setFilterPriority('all'); }} className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter">Reset</button>
+                  <button onClick={() => { setSearchQuery(''); setFilterAssignee('all'); setFilterPriority('all'); }} className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter">Reset Filters</button>
               )}
           </div>
       </header>
       
       {viewMode === 'board' ? (
-        <div className="flex-1 flex gap-8 overflow-x-auto overflow-y-hidden px-8 py-8 items-start bg-background">
+        <div className="flex-1 flex gap-8 overflow-x-auto overflow-y-hidden px-8 py-8 items-start bg-background animate-in fade-in duration-300">
           <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} sensors={sensors}>
             <SortableContext items={(filteredColumns || []).filter(col => col && col.id).map(col => `column-${col.id}`)} strategy={horizontalListSortingStrategy}>
               {(filteredColumns || []).map((column) => column && (
@@ -388,11 +374,11 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
           {isStructureUnlocked && (
               <div className="min-w-[300px] pt-2">
                   {isCreatingColumn ? (
-                      <div className="bg-white border border-primary/30 p-4 rounded-xl shadow-lg ring-4 ring-primary/5">
+                      <div className="bg-white border border-primary/30 p-4 rounded-xl shadow-lg ring-4 ring-primary/5 animate-in zoom-in-95 duration-200">
                           <input type="text" value={newColumnTitle} onChange={e => setNewColumnTitle(e.target.value)} onKeyDown={handleCreateColumn} autoFocus onBlur={() => setIsCreatingColumn(false)} placeholder="Column title... (Enter)" className="w-full bg-transparent text-sm focus:outline-none text-zinc-900 font-bold" />
                       </div>
                   ) : (
-                      <button onClick={() => setIsCreatingColumn(true)} className="w-full flex items-center justify-center gap-3 p-5 border border-dashed border-zinc-200 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-white hover:border-zinc-300 transition-all group">
+                      <button onClick={() => setIsCreatingColumn(true)} className="w-full flex items-center justify-center gap-3 p-5 border border-dashed border-zinc-200 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-white hover:border-zinc-300 hover:shadow-sm transition-all group">
                           <span className="material-icons text-[20px]">add_circle_outline</span>
                           <span className="text-sm font-bold uppercase tracking-wider">Add Column</span>
                       </button>
@@ -401,10 +387,9 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
           )}
         </div>
       ) : (
-        <TaskListView 
-            columns={filteredColumns}
-            onTaskClick={openEditModal}
-        />
+        <div className="flex-1 animate-in fade-in duration-300">
+            <TaskListView columns={filteredColumns} onTaskClick={openEditModal} />
+        </div>
       )}
 
       {isModalOpen && (
@@ -420,16 +405,16 @@ const KanbanBoard = ({ current_project, active_board, project_boards = [], colum
 
 const TaskCard = React.memo(({ task }: { task: Task }) => {
   if (!task) return null;
-  const priorityIcon = task.priority === 'highest' ? { icon: 'keyboard_double_arrow_up', color: 'text-zinc-600' } :
-                       task.priority === 'high' ? { icon: 'keyboard_arrow_up', color: 'text-zinc-500' } : 
-                       task.priority === 'low' ? { icon: 'keyboard_arrow_down', color: 'text-zinc-400' } : 
-                       task.priority === 'lowest' ? { icon: 'keyboard_double_arrow_down', color: 'text-zinc-400' } : 
+  const priorityIcon = task.priority === 'highest' ? { icon: 'keyboard_double_arrow_up', color: 'text-red-600' } :
+                       task.priority === 'high' ? { icon: 'keyboard_arrow_up', color: 'text-red-500' } : 
+                       task.priority === 'low' ? { icon: 'keyboard_arrow_down', color: 'text-blue-400' } : 
+                       task.priority === 'lowest' ? { icon: 'keyboard_double_arrow_down', color: 'text-blue-400' } : 
                        { icon: 'drag_handle', color: 'text-zinc-300' };
 
   return (
-    <div className="bg-white border border-zinc-200/60 shadow-[0_1px_2px_0_rgba(0,0,0,0.03)] hover:shadow-[0_8px_16px_-2px_rgba(0,0,0,0.05),0_4px_8px_-2px_rgba(0,0,0,0.03)] hover:-translate-y-[2px] transition-all duration-300 cursor-grab rounded-lg p-4 relative group flex flex-col gap-3">
+    <div className="bg-white border border-zinc-200/60 shadow-[0_1px_2px_0_rgba(0,0,0,0.03)] hover:shadow-[0_8px_16px_-2px_rgba(0,0,0,0.05),0_4px_8px_-2px_rgba(0,0,0,0.03)] hover:-translate-y-[2px] transition-all duration-300 cursor-grab rounded-lg p-4 relative group flex flex-col gap-3 overflow-hidden">
       <div className="flex justify-between items-start">
-        <span className="font-mono text-[10px] text-zinc-400 font-bold tracking-tight uppercase">{task.formatted_id}</span>
+        <span className="font-mono text-[10px] text-zinc-400 font-bold tracking-tight uppercase group-hover:text-primary transition-colors">{task.formatted_id}</span>
         <div className="flex items-center gap-1.5">
             {task.is_ai_assigned && <span className="material-icons text-primary/40 text-[14px]" title="AI Agent Support">smart_toy</span>}
             {task.assignee ? (
@@ -443,7 +428,7 @@ const TaskCard = React.memo(({ task }: { task: Task }) => {
             )}
         </div>
       </div>
-      <h4 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 tracking-tight">{task.title}</h4>
+      <h4 className="text-sm font-semibold text-zinc-900 leading-snug line-clamp-2 tracking-tight group-hover:text-primary transition-colors">{task.title}</h4>
       <div className="flex items-center justify-between mt-1 pt-2.5 border-t border-zinc-50">
          <div className="flex items-center gap-2">
              <span className={`material-icons text-[16px] ${priorityIcon.color}`} title={`Priority: ${task.priority}`}>{priorityIcon.icon}</span>
@@ -465,7 +450,7 @@ const DraggableBoardTab = ({ board, isActive, projectKey, canEdit }: { board: Bo
     if (!board) return null;
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `board-${board.id}`, data: { type: 'Board', board }, disabled: !canEdit });
     const style = { transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
-    return <Link ref={setNodeRef} style={style} {...attributes} {...listeners} href={`/projects/${projectKey}/boards/${board.id}`} className={`pb-3 text-xs uppercase tracking-widest font-extrabold transition-all border-b-2 whitespace-nowrap cursor-grab ${isActive ? 'border-primary text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'}`}>{board?.name}</Link>;
+    return <Link ref={setNodeRef} style={style} {...attributes} {...listeners} href={`/projects/${projectKey}/boards/${board.id}`} className={`pb-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap cursor-grab ${isActive ? 'border-primary text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'}`}>{board?.name}</Link>;
 };
 
 const DraggableTask = ({ task, onClick, canDrag }: { task: Task; onClick: () => void; canDrag: boolean }) => {
@@ -486,7 +471,7 @@ const DroppableColumn = ({ column, user_permissions, canEdit, isConfigMode, onRe
     const style = { transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
 
     return (
-      <div ref={(node) => { setSortableRef(node); setDroppableRef(node); }} style={style} className={`flex-1 min-w-[300px] max-w-[340px] flex flex-col gap-5 p-2 transition-all duration-300 rounded-xl ${isOver ? 'bg-white shadow-inner ring-2 ring-primary/5' : 'bg-transparent'} ${isConfigMode ? 'border-2 border-dashed border-primary/20 bg-primary/[0.01]' : ''}`} >
+      <div ref={(node) => { setSortableRef(node); setDroppableRef(node); }} style={style} className={`flex-1 min-w-[300px] max-w-[340px] flex flex-col gap-5 p-2 transition-all duration-300 rounded-xl ${isOver ? 'bg-white shadow-inner ring-4 ring-primary/5' : 'bg-transparent'} ${isConfigMode ? 'border-2 border-dashed border-primary/20 bg-primary/[0.01]' : ''}`} >
         <div className="flex items-center justify-between px-2 group/header">
             <div className="flex items-center gap-3 flex-1">
                 {canEdit && isConfigMode ? (<div {...listeners} {...attributes} className="cursor-grab text-zinc-300 hover:text-primary p-0.5"><span className="material-icons text-[18px]">drag_indicator</span></div>) : (!canEdit && <span className="material-icons text-[12px] text-zinc-300">lock</span>)}
